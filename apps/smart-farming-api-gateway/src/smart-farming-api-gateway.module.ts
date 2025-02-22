@@ -4,8 +4,10 @@ import { SmartFarmingApiGatewayService } from './smart-farming-api-gateway.servi
 import { OrderModule } from './order/order.module';
 import { InventoryModule } from './inventory/inventory.module';
 
+import { LandModule } from './land/land.module';
+
 @Module({
-  imports: [OrderModule, InventoryModule],
+  imports: [OrderModule, InventoryModule, LandModule],
   controllers: [SmartFarmingApiGatewayController],
   providers: [SmartFarmingApiGatewayService],
 })
