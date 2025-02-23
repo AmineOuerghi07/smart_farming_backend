@@ -63,6 +63,51 @@
       "compilerOptions": {
         "tsConfigPath": "apps/inventory/tsconfig.app.json"
       }
+    },
+    "stock": {
+      "type": "application",
+      "root": "apps/stock",
+      "entryFile": "main",
+      "sourceRoot": "apps/stock/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/stock/tsconfig.app.json"
+      }
+    },
+    "facture": {
+      "type": "application",
+      "root": "apps/facture",
+      "entryFile": "main",
+      "sourceRoot": "apps/facture/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/facture/tsconfig.app.json"
+      }
+    },
+    "land-service": {
+      "type": "application",
+      "root": "apps/land-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/land-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/land-service/tsconfig.app.json"
+      }
+    },
+    "sensor-service": {
+      "type": "application",
+      "root": "apps/sensor-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/sensor-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/sensor-service/tsconfig.app.json"
+      }
+    },
+    "auth": {
+      "type": "application",
+      "root": "apps/auth",
+      "entryFile": "main",
+      "sourceRoot": "apps/auth/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/auth/tsconfig.app.json"
+      }
     }
   }
 }

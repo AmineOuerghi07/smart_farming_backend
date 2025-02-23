@@ -1,31 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Order } from './entities/order.entity';
 import { Model } from 'mongoose';
-
+import { Order } from './schemas/orderSchema';
 
 @Injectable()
 export class OrderService {
-  constructor(@InjectModel(Order.name) private orderModel: Model<Order>){}
+  constructor(@InjectModel(Order.name) private orderModel: Model<Order>) { }
+
   async create(createOrderDto: CreateOrderDto) {
-    return await this.orderModel.create(createOrderDto)  
+    try {
+      return await this.orderModel.create(createOrderDto);
+      
+    } catch (error) {
+      throw new Error(`Failed to create order: ${error.message}`);
+    }
   }
 
   async findAll() {
-    return await this.orderModel.find();
+    return await this.orderModel.find(); 
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
+  async findOne(id: string) {
+    const order = await this.orderModel.findById(id).exec();
+    if (!order) throw new NotFoundException(`Order with ID ${id} not found`);
+    return order;
   }
 
-  update(id: string, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
+  async update(id: string, updateOrderDto: UpdateOrderDto) {
+    const updatedOrder = await this.orderModel.findByIdAndUpdate(id, updateOrderDto, {
+      new: true, // Return the updated document
+      runValidators: true, // Ensure validation runs
+    });
+
+    if (!updatedOrder) throw new NotFoundException(`Order with ID ${id} not found`);
+    return updatedOrder;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+  async remove(id: string) {
+    const deletedOrder = await this.orderModel.findByIdAndDelete(id);
+    if (!deletedOrder) throw new NotFoundException(`Order with ID ${id} not found`);
+    return { message: 'Order deleted successfully' };
   }
 }

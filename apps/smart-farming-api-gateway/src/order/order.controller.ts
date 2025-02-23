@@ -1,19 +1,36 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch, Post } from '@nestjs/common';
 import { OrderService } from './order.service';
 
 @Controller('order')
 export class OrderController {
-    constructor(private readonly orderService : OrderService){}
+    constructor(private readonly orderService: OrderService) { }
 
     @Get()
-    async findAll()
-    {
+    async findAll() {
         return this.orderService.findAll();
     }
 
-    @Post()
-    async create(@Body(){name,idUser, date})
-    {
-        return this.orderService.create({name ,idUser , date})
+    @Get('id')
+    async findOne(@Body() { id }) {
+        return this.orderService.findOne(id);
     }
+
+    @Post()
+    async create(@Body() { totalAmount, customerId, orderStatus }) {
+        return this.orderService.create({ totalAmount, customerId, orderStatus })
+    }
+
+    @Patch()
+    async update(@Body() { id, totalAmount, customerId, orderStatus }) {
+        return this.orderService.update({ id, totalAmount, customerId, orderStatus })
+
+    }
+
+    @Delete()
+    async remove(@Body() { id }) {
+        return this.orderService.remove(id)
+    }
+
+
+
 }
