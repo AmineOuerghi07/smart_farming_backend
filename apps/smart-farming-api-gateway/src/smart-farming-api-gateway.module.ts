@@ -8,11 +8,10 @@ import { FactureModule } from './facture/facture.module';
 
 import { LandModule } from './land/land.module';
 import { SensorsModule } from './sensors/sensors.module';
+import { AccountModule } from './account/account.module';
 
 @Module({
-  imports: [OrderModule, InventoryModule, ProductModule, FactureModule, LandModule, SensorsModule],
-
-
+  imports: [OrderModule, InventoryModule, ProductModule, FactureModule, LandModule, SensorsModule, AccountModule],
   controllers: [SmartFarmingApiGatewayController],
   providers: [SmartFarmingApiGatewayService],
 })
