@@ -63,6 +63,24 @@
       "compilerOptions": {
         "tsConfigPath": "apps/inventory/tsconfig.app.json"
       }
+    },
+    "stock": {
+      "type": "application",
+      "root": "apps/stock",
+      "entryFile": "main",
+      "sourceRoot": "apps/stock/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/stock/tsconfig.app.json"
+      }
+    },
+    "facture": {
+      "type": "application",
+      "root": "apps/facture",
+      "entryFile": "main",
+      "sourceRoot": "apps/facture/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/facture/tsconfig.app.json"
+      }
     }
   }
 }

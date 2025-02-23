@@ -1,16 +1,16 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+// import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
-@Schema()
-export class Order {
-    @Prop()
-    date : string
+// @Schema()
+// export class Order {
+//     @Prop()
+//     date : string
 
-    @Prop()
-    idUser : string
+//     @Prop()
+//     idUser : string
 
-    @Prop()
-    name : string
+//     @Prop()
+//     name : string
 
-}
+// }
 
-export const OrderSchema = SchemaFactory.createForClass(Order)
+// export const OrderSchema = SchemaFactory.createForClass(Order)
