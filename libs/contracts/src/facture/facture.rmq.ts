@@ -1,0 +1,2 @@
+export const FACTURE_NAME = 'FACTURE_SERVICE'
+export const FACTURE_QUEUE = 'FACTURE_QUEUE'

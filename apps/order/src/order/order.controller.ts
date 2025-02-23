@@ -5,13 +5,24 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { ORDER_PATTERNS } from '@app/contracts/order/order.patterns';
 
+
 @Controller()
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly orderService: OrderService) { }
+
+  static mapOrderPayload(payload: any) {
+    let orderDTO = new CreateOrderDto();
+    orderDTO.totalAmount = payload.totalAmount;
+    orderDTO.customerId = null;
+    orderDTO.orderStatus = payload.orderStatus;
+    orderDTO.orderItems = []
+    return orderDTO;
+  }
 
   @MessagePattern(ORDER_PATTERNS.CREATE)
-  create(@Payload() createOrderDto: CreateOrderDto) {
-    return this.orderService.create(createOrderDto);
+  create(@Payload() createOrderDto: any) {
+    let dto: CreateOrderDto = OrderController.mapOrderPayload(createOrderDto);
+    return this.orderService.create(dto);
   }
 
   @MessagePattern(ORDER_PATTERNS.FIND_ALL)
@@ -20,7 +31,7 @@ export class OrderController {
   }
 
   @MessagePattern(ORDER_PATTERNS.FIND_ONE)
-  findOne(@Payload() id: number) {
+  findOne(@Payload() id: string) {
     return this.orderService.findOne(id);
   }
 
@@ -30,7 +41,7 @@ export class OrderController {
   }
 
   @MessagePattern(ORDER_PATTERNS.REMOVE)
-  remove(@Payload() id: number) {
+  remove(@Payload() id: string) {
     return this.orderService.remove(id);
   }
 }
