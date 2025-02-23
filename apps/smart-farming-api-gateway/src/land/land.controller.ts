@@ -4,7 +4,6 @@ import { CreateLandDto } from '@app/contracts/land/dtos/land-dto/create-land.dto
 import { UpdateLandDto } from '@app/contracts/land/dtos/land-dto/update-land.dto';
 import { CreateUserDto } from '@app/contracts/land/dtos/user-dto/create-user.dto';
 
-import { ObjectId } from 'mongoose';
 import { UpdateUserDto } from '@app/contracts/land/dtos/user-dto/update-user.dto';
 import { CreateRegionDto } from '@app/contracts/land/dtos/region-dto/create-region.dto';
 import { UpdateRegionDto } from '@app/contracts/land/dtos/region-dto/update-region.dto';

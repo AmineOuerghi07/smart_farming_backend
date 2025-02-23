@@ -72,6 +72,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/land-service/tsconfig.app.json"
       }
+    },
+    "sensor-service": {
+      "type": "application",
+      "root": "apps/sensor-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/sensor-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/sensor-service/tsconfig.app.json"
+      }
     }
   }
 }
