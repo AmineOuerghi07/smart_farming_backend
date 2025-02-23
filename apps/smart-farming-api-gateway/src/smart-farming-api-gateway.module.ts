@@ -6,8 +6,13 @@ import { InventoryModule } from './inventory/inventory.module';
 import { ProductModule } from './product/product.module';
 import { FactureModule } from './facture/facture.module';
 
+import { LandModule } from './land/land.module';
+import { SensorsModule } from './sensors/sensors.module';
+
 @Module({
-  imports: [OrderModule, InventoryModule, ProductModule, FactureModule],
+  imports: [OrderModule, InventoryModule, ProductModule, FactureModule, LandModule, SensorsModule],
+
+
   controllers: [SmartFarmingApiGatewayController],
   providers: [SmartFarmingApiGatewayService],
 })
