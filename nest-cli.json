@@ -64,7 +64,6 @@
         "tsConfigPath": "apps/inventory/tsconfig.app.json"
       }
     },
-
     "stock": {
       "type": "application",
       "root": "apps/stock",
@@ -81,7 +80,8 @@
       "sourceRoot": "apps/facture/src",
       "compilerOptions": {
         "tsConfigPath": "apps/facture/tsconfig.app.json"
-
+      }
+    },
     "land-service": {
       "type": "application",
       "root": "apps/land-service",
@@ -98,7 +98,15 @@
       "sourceRoot": "apps/sensor-service/src",
       "compilerOptions": {
         "tsConfigPath": "apps/sensor-service/tsconfig.app.json"
-
+      }
+    },
+    "auth": {
+      "type": "application",
+      "root": "apps/auth",
+      "entryFile": "main",
+      "sourceRoot": "apps/auth/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/auth/tsconfig.app.json"
       }
     }
   }
