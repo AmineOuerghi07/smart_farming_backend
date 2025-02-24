@@ -6,6 +6,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AUTH_NAME } from '@app/contracts/auth/auth.rmq';
 import { AUTH_PATTERNS } from '@app/contracts/auth/auth.patterns';
 import { OTP_PATTERNS } from '@app/contracts/auth/otp/otp.patterns';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class AccountService {
@@ -25,11 +26,12 @@ export class AccountService {
     try
     {
       console.log("Test")
-      return this.client.send<any, LoginDto>(AUTH_PATTERNS.LOGIN, loginDto);
+      return await lastValueFrom(this.client.send<any, LoginDto>(AUTH_PATTERNS.LOGIN, loginDto));
     }
     catch(e)
     {
-      console.log(e.message);
+      console.log("HI")
+      throw e;
     }
      
   }
@@ -65,7 +67,7 @@ export class AccountService {
 
   // Delete User
   public async deleteUser(id: string) {
-    return this.client.send(AUTH_PATTERNS.DELETE_USER, { id });
+    return  this.client.send(AUTH_PATTERNS.DELETE_USER, { id });
   }
 
 

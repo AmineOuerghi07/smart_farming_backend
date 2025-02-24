@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create.user.dto';
@@ -10,6 +10,13 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { EmailService } from '../services/Email.service'; 
 import { SmsService } from '../services/Sms.service'; 
 import { User } from './entities/user.entity';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
+import { ORDER_NAME } from '@app/contracts/order/order.rmq';
+import { ORDER_PATTERNS } from '@app/contracts/order/order.patterns';
+import { CUSTOMER_PATTERNS } from '@app/contracts/facture/customer/customer.patterns';
+import { LAND_NAME } from '@app/contracts/land/land.rmq';
+import { USER_PATTERNS } from '@app/contracts/land/user.patterns';
+import { UpdateUserDto } from './dto/update.user.dto';
 
 @Injectable()
 export class IdentityService {
@@ -18,13 +25,14 @@ export class IdentityService {
     @InjectModel(User.name) private userModel: Model<User>,
     private readonly emailService : EmailService, // Assuming the email service is injected
     private readonly smsService: SmsService, // Assuming the SMS service is injected
+    @Inject(LAND_NAME)private landClient : ClientProxy
   ) {}
 
   // Register method
   async register(createUserDto: CreateUserDto) {
     const existingUser = await this.userModel.findOne({ email: createUserDto.email });
     if (existingUser) {
-      throw new HttpException('Email already in use', HttpStatus.BAD_REQUEST);
+      throw new RpcException('Email already in use');
     }
 
     const saltRounds = 10;
@@ -37,6 +45,7 @@ export class IdentityService {
     });
 
     const savedUser = await newUser.save();
+    this.landClient.emit(USER_PATTERNS.CREATE, {_id : savedUser.id ,name : savedUser.fullname, email: savedUser.email, phone : savedUser.phonenumber})
     return { message: 'User registered successfully', user: savedUser };
   }
 
@@ -44,12 +53,12 @@ export class IdentityService {
   async login(loginDto: LoginDto) {
     const user = await this.userModel.findOne({ email: loginDto.email });
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new RpcException('Invalid credentials');
     }
 
     const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
     if (!isPasswordValid) {
-      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+      throw new RpcException('Invalid credentials');
     }
 
     const payload = { id: user._id, email: user.email, roles: user.roles };
@@ -64,7 +73,7 @@ export class IdentityService {
       const decoded = this.jwtService.verify(jwt);
       return decoded;
     } catch (error) {
-      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+      throw new RpcException('Invalid token');
     }
   }
 
@@ -80,7 +89,7 @@ export class IdentityService {
     }
 
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new RpcException('User not found');
     }
 
     const resetToken = this.jwtService.sign(
@@ -101,12 +110,12 @@ export class IdentityService {
     try {
       decoded = this.jwtService.verify(token, { secret: 'your-reset-secret' });
     } catch (error) {
-      throw new HttpException('Invalid or expired token', HttpStatus.BAD_REQUEST);
+      throw new RpcException('Invalid or expired token');
     }
 
     const user = await this.userModel.findById(decoded.id);
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new RpcException('User not found');
     }
 
     const saltRounds = 10;
@@ -142,11 +151,21 @@ export class IdentityService {
   }
 
   //  Update User
-  async updateUser(id: string, updateData: any) {
+  async updateUser(id: string, updateData: UpdateUserDto) {
+
+    if(updateData.password)
+    {
+      updateData.password = await bcrypt.hash(updateData.password, 10)
+    }
+
+
     const updatedUser = await this.userModel.findByIdAndUpdate(id, updateData, { new: true });
     if (!updatedUser) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new RpcException('User not found');
     }
+
+    this.landClient.emit(USER_PATTERNS.UPDATE, {_id : id , name : updatedUser.fullname, email: updatedUser.email, phone : updatedUser.phonenumber})
+
     return updatedUser;
   }
 
@@ -154,8 +173,11 @@ export class IdentityService {
   async deleteUser(id: string) {
     const deletedUser = await this.userModel.findByIdAndDelete(id);
     if (!deletedUser) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new RpcException('User not found');
     }
+
+    this.landClient.emit(USER_PATTERNS.REMOVE, id)
+
     return { message: 'User deleted successfully' };
   }
 

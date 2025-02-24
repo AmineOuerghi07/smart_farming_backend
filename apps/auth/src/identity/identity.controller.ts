@@ -1,4 +1,4 @@
-import { Controller, UseGuards } from '@nestjs/common';
+import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import { Ctx, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
 import { IdentityService } from './identity.service';
 import { LoginDto } from './dto/login.dto';
@@ -14,17 +14,28 @@ export class IdentityController {
 
     @MessagePattern(AUTH_PATTERNS.REGISTER)
     async register(command) {
-        return this.identityService.register(command);
+        try
+        {
+            let user = this.identityService.register(command);
+
+            return user;
+        }catch(e)
+        {
+            throw e;
+        }
+        
     }
 
    
     @MessagePattern(AUTH_PATTERNS.LOGIN)
     async login(@Payload() command : LoginDto, @Ctx() context: RmqContext) {
+       
         console.log('command user: ', command.email);
-        const channel = context.getChannelRef();
-        let response = this.identityService.login(command);
-        channel.ack(context.getMessage());
+        //const channel = context.getChannelRef();
+        let response = await this.identityService.login(command);
+        //channel.ack(context.getMessage());
         return response;
+        
     }
   
 
@@ -48,7 +59,7 @@ export class IdentityController {
     }
 
     ///
-    @UseGuards(AuthGuard)
+    //@UseGuards(AuthGuard)
     @MessagePattern(AUTH_PATTERNS.UPDATE_USER)
     async updateUser(@Payload() command) {
       return this.identityService.updateUser(command.id, command.updateData);

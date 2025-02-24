@@ -1,9 +1,13 @@
 import { IsString, IsEmail, IsNotEmpty } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CreateCustomerDto {
+
+    _id : Types.ObjectId
+
     @IsString()
     @IsNotEmpty()
-    customerName: string; // Fixed typo: "costumerName" → "customerName"
+    name: string; // Fixed typo: "costumerName" → "customerName"
 
     @IsEmail()
     @IsNotEmpty()
