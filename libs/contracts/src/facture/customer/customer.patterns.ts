@@ -1,4 +1,4 @@
-export const Customer_PATTERNS =
+export const CUSTOMER_PATTERNS =
 {
     FIND_ALL: 'customer.findAll',
     FIND_ONE: 'customer.findOne',

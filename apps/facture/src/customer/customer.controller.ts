@@ -1,34 +1,35 @@
 import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { CustomerService } from './costumer.service';
+import { CUSTOMER_PATTERNS } from '@app/contracts/facture/customer/customer.patterns';
 
 @Controller()
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) { }
 
-  @MessagePattern('createCustomer')
+  @EventPattern(CUSTOMER_PATTERNS.CREATE)
   async create(@Payload() createCustomerDto: CreateCustomerDto) {
     return await this.customerService.create(createCustomerDto);
   }
 
-  @MessagePattern('findAllCustomers')
+  @MessagePattern(CUSTOMER_PATTERNS.FIND_ALL)
   async findAll() {
     return await this.customerService.findAll();
   }
 
-  @MessagePattern('findOneCustomer')
+  @MessagePattern(CUSTOMER_PATTERNS.FIND_ONE)
   async findOne(@Payload() id: string) {
     return await this.customerService.findOne(id);
   }
 
-  @MessagePattern('updateCustomer')
-  async update(@Payload() payload: { id: string; updateCustomerDto: UpdateCustomerDto }) {
-    return await this.customerService.update(payload.id, payload.updateCustomerDto);
+  @EventPattern(CUSTOMER_PATTERNS.UPDATE)
+  async update(@Payload() payload: UpdateCustomerDto) {
+    return await this.customerService.update(payload._id.toString(), payload);
   }
 
-  @MessagePattern('removeCustomer')
+  @EventPattern(CUSTOMER_PATTERNS.REMOVE)
   async remove(@Payload() id: string) {
     return await this.customerService.remove(id);
   }

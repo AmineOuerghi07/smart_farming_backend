@@ -1,6 +1,10 @@
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import {  Types } from 'mongoose';
 
 export class CreateUserDto {
+
+  _id : Types.ObjectId
+
   @IsNotEmpty()
   @IsString()
   name: string;
@@ -8,4 +12,6 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsEmail()
   email: string;
+
+  phone : string;
 }

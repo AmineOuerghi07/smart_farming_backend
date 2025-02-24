@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -10,7 +10,7 @@ import { USER_PATTERNS } from '@app/contracts/land/user.patterns';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @MessagePattern(USER_PATTERNS.CREATE)
+  @EventPattern(USER_PATTERNS.CREATE)
   async create(@Payload() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
@@ -26,13 +26,16 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
-  @MessagePattern(USER_PATTERNS.UPDATE)
+  @EventPattern(USER_PATTERNS.UPDATE)
   async update(@Payload() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(updateUserDto.id, updateUserDto);
+    console.log(updateUserDto)
+    let user = await this.usersService.update(updateUserDto._id.toString(), updateUserDto);
+    console.log(user)
+    return user;
   }
 
-  @MessagePattern(USER_PATTERNS.REMOVE)
-  async remove(@Payload() id: ObjectId) {
+  @EventPattern(USER_PATTERNS.REMOVE)
+  async remove(@Payload() id: string) {
     return this.usersService.remove(id);
   }
 }

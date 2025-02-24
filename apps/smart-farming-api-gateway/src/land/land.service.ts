@@ -43,7 +43,7 @@ export class LandService {
     return this.landClient.send(USER_PATTERNS.CREATE ,createUserDto).toPromise()
   }
   async findOneUser(id: string) {
-    return this.landClient.send<any, string>(USER_PATTERNS.FIND_ONE,  id ).toPromise();
+    return await this.landClient.send<any, string>(USER_PATTERNS.FIND_ONE,  id ).toPromise();
   }
 
   async removeUser(id: string) {

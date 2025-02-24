@@ -1,6 +1,6 @@
-import { Body, Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
 import { AccountService } from './account.service';
-import { Delete, Param, Post ,Put,Request, UseGuards} from '@nestjs/common/decorators';
+import { Delete, HttpCode, Param, Post ,Put,Request, UseFilters, UseGuards} from '@nestjs/common/decorators';
 import { CreateUserDto } from './dto/create-account.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -16,16 +16,25 @@ export class AccountController {
     return this.accountService.hello();
   }
   @Post('sign-up')
-    async register(@Body() req : CreateUserDto) {
-        return this.accountService.register(req);
+  async register(@Body() req : CreateUserDto) {
+      return this.accountService.register(req);
     }
 
     
   @Post('sign-in')
-    async login(@Body() req: LoginDto) {
+  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NOT_FOUND)
+  async login(@Body() req: LoginDto) {
       console.log(req);
-   return this.accountService.login(req);
- } 
+      try
+      {
+        let response = await this.accountService.login(req);
+        return response;
+      }catch(e)
+      {
+        throw new HttpException("Invalid Credentials", HttpStatus.NOT_FOUND)
+      }
+  } 
 
 
  @Get('profile')

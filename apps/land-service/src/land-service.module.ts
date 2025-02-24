@@ -5,6 +5,8 @@ import { UsersModule } from './users/users.module';
 import { RegionsModule } from './regions/regions.module';
 import { LandsModule } from './lands/lands.module';
 import { SensorsModule } from './sensors/sensors.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-redis-yet';
 
 @Module({
   imports: [
@@ -12,7 +14,18 @@ import { SensorsModule } from './sensors/sensors.module';
     UsersModule,
     RegionsModule,
     LandsModule,
-    SensorsModule
+    SensorsModule,
+    CacheModule.registerAsync({  
+              isGlobal: true,  
+              useFactory: async () => ({  
+                store: await redisStore({  
+                  socket: {  
+                    host: 'localhost',  
+                    port: 6379,  
+                  },        
+                }),      
+              }),    
+        }), 
   ],
 })
 export class LandServiceModule {}
