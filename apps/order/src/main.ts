@@ -4,6 +4,7 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ORDER_QUEUE } from '@app/contracts/order/order.rmq';
 
 async function bootstrap() {
+ 
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(OrderAppModule, {
     transport: Transport.RMQ,
     options: {
