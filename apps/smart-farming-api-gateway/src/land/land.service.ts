@@ -13,6 +13,9 @@ import { REGION_PATTERNS } from '@app/contracts/land/region.patterns';
 import { CreateSensorDto } from '@app/contracts/land/dtos/sensor-dto/create-sensor.dto';
 import { UpdateSensorDto } from '@app/contracts/land/dtos/sensor-dto/update-sensor.dto';
 import { SENSOR_PATTERNS } from '@app/contracts/land/sensor.patterns';
+import { CreatePlantDto } from '@app/contracts/land/dtos/plant-dto/create-plant.dto';
+import { UpdatePlantDto } from 'apps/land-service/src/plants/dto/update-plant.dto';
+import { PLANT_PATTERNS } from '@app/contracts/land/plant.patterns';
 
 @Injectable()
 export class LandService {
@@ -57,6 +60,26 @@ export class LandService {
 
   async findAllUser() {
     return this.landClient.send(USER_PATTERNS.FIND_ALL, {}).toPromise();
+  }
+  //--------------------------------------------------------
+  async createPlant(createPlantDto : CreatePlantDto){
+    return this.landClient.send(PLANT_PATTERNS.CREATE ,createPlantDto).toPromise()
+  }
+  async findOnePlant(id: string) {
+    return await this.landClient.send<any, string>(PLANT_PATTERNS.FIND_ONE,  id ).toPromise();
+  }
+
+  async removePlant(id: string) {
+    return this.landClient.send<any, string>(PLANT_PATTERNS.REMOVE,  id ).toPromise();
+  }
+
+  async updatePlant(id: string, updatePlantDto: UpdatePlantDto) {
+    updatePlantDto.id = id;
+    return this.landClient.send(PLANT_PATTERNS.UPDATE, updatePlantDto).toPromise();
+  }
+
+  async findAllPlant() {
+    return this.landClient.send(PLANT_PATTERNS.FIND_ALL, {}).toPromise();
   }
     //-------------------------------------------------
     async createRegion(createRegionDto : CreateRegionDto){

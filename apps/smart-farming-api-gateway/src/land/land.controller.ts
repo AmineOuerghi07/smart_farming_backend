@@ -13,6 +13,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
+import { CreatePlantDto } from '@app/contracts/land/dtos/plant-dto/create-plant.dto';
+import { UpdatePlantDto } from '@app/contracts/land/dtos/plant-dto/update-plant.dto';
 
 const landAssetsPath = join(__dirname, '..', '..', 'assets', 'lands');
 export const getUploadPath = (subdirectory: string) => {
@@ -31,7 +33,7 @@ export class LandController {
 
 
 
-  
+
   @Post()
   @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
@@ -48,7 +50,7 @@ export class LandController {
     @UploadedFile() image: Express.Multer.File,
     @Body() createLandDto: CreateLandDto,
   ) {
-    const imageUrl = `${image.filename}`; // Adjust the URL as needed
+    const imageUrl = `${image.filename}`; 
     const dtoWithImage = { ...createLandDto, image: imageUrl };
     return this.landService.createLand(dtoWithImage);
   }
@@ -72,8 +74,31 @@ export class LandController {
     return this.landService.removeLand(id);
   }
 
+//-------------------------
 
-
+@Post('/plant')
+async createPlant(@Body()createPlantDto : CreatePlantDto){
+      return this.landService.createPlant(createPlantDto)
+}
+@Get('/plant')
+async findAllPlants(){
+  return this.landService.findAllPlant()
+}
+@Get('/plant/:id')
+async findOnePlant(@Param('id')id :string){
+      console.log(id);
+      return this.landService.findOnePlant(id)
+}
+@Put('/plant/:id')
+async updatePlant(@Param('id') id: string, @Body() updatePlantDto: UpdatePlantDto)
+{
+  return this.landService.updatePlant(id , updatePlantDto)
+}
+@Delete('/plant/:id')
+async deletePlant(@Param('id') id: string)
+{
+  return this.landService.removePlant(id)
+}
 
 
 
