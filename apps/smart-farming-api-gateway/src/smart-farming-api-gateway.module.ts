@@ -9,9 +9,25 @@ import { FactureModule } from './facture/facture.module';
 import { LandModule } from './land/land.module';
 import { SensorsModule } from './sensors/sensors.module';
 import { AccountModule } from './account/account.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
-  imports: [OrderModule, InventoryModule, ProductModule, FactureModule, LandModule, SensorsModule, AccountModule],
+  imports: [OrderModule,
+     InventoryModule,
+      ProductModule,
+       FactureModule,
+       ServeStaticModule.forRoot({
+        rootPath: join(process.cwd(), 'assets'), 
+        serveRoot: '/uploads',
+        serveStaticOptions: {
+          index: false, 
+        },
+      }),
+        LandModule,
+         SensorsModule,
+          AccountModule
+           ],
   controllers: [SmartFarmingApiGatewayController],
   providers: [SmartFarmingApiGatewayService],
 })

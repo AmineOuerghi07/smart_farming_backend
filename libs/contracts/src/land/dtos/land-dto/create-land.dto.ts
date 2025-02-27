@@ -5,7 +5,7 @@ export class CreateLandDto {
   @IsNotEmpty()
   @IsString()
   name: string;
-
+  image?: string;
   @IsNotEmpty()
   @IsString()
   userId: string;

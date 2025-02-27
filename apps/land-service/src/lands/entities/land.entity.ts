@@ -8,6 +8,9 @@ export class Land {
   @Prop({ required: true })
   name: string;
 
+  @Prop()
+  image: string; 
+  
   @Prop({ type: 'ObjectId', ref: 'User' })
   user: User;
 

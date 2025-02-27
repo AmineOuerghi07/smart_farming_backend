@@ -7,6 +7,9 @@ import { LandsModule } from './lands/lands.module';
 import { SensorsModule } from './sensors/sensors.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { PlantsModule } from './plants/plants.module';
 
 @Module({
   imports: [
@@ -15,17 +18,12 @@ import { redisStore } from 'cache-manager-redis-yet';
     RegionsModule,
     LandsModule,
     SensorsModule,
-    CacheModule.registerAsync({  
-              isGlobal: true,  
-              useFactory: async () => ({  
-                store: await redisStore({  
-                  socket: {  
-                    host: 'localhost',  
-                    port: 6379,  
-                  },        
-                }),      
-              }),    
-        }), 
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'assets'), 
+      serveRoot: '/uploads', 
+    }),
+    PlantsModule,
   ],
+  
 })
 export class LandServiceModule {}
