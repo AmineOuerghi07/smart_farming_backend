@@ -1,13 +1,25 @@
 // src/lands/dto/create-land.dto.ts
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateLandDto {
   @IsNotEmpty()
-  @IsString()
   name: string;
-  image?: string;
+
   @IsNotEmpty()
-  @IsString()
-  userId: string;
+  cordonate: string;
+
+  @IsBoolean()
+  forRent: boolean;
+
+  @IsNumber()
+  surface: number;
+
+
+
+  @IsNotEmpty()
+  user: string;  // User ID
+
+  @IsOptional()
+  regions?: string[];
 }
 

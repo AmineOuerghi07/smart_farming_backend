@@ -12,7 +12,7 @@ import { CreateSensorDto } from '@app/contracts/land/dtos/sensor-dto/create-sens
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { join } from 'path';
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync, unlinkSync } from 'fs';
 import { CreatePlantDto } from '@app/contracts/land/dtos/plant-dto/create-plant.dto';
 import { UpdatePlantDto } from '@app/contracts/land/dtos/plant-dto/update-plant.dto';
 
@@ -50,7 +50,7 @@ export class LandController {
     @UploadedFile() image: Express.Multer.File,
     @Body() createLandDto: CreateLandDto,
   ) {
-    const imageUrl = `${image.filename}`; 
+    const imageUrl = `lands/${image.filename}`; 
     const dtoWithImage = { ...createLandDto, image: imageUrl };
     return this.landService.createLand(dtoWithImage);
   }
@@ -65,7 +65,46 @@ export class LandController {
   }
 
   @Put('land/:id')
-  async updateLand(@Param('id') id: string, @Body() updateLandDto: UpdateLandDto) {
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: getUploadPath('lands'),
+      filename: (req, file, callback) => {
+        const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const ext = file.originalname.split('.').pop();
+        const filename = `land-${uniqueName}.${ext}`;
+        callback(null, filename);
+      },
+    }),
+  }))
+  async updateLand(
+    @Param('id') id: string,
+    @Body() updateLandDto: UpdateLandDto,
+    @UploadedFile() image?: Express.Multer.File,
+  ) {
+    // Get existing land data
+    const existingLand = await this.landService.findOneLand(id);
+    
+    if (image) {
+      // Delete old image if exists
+      if (existingLand.image) {
+        const oldImagePath = join(
+          getUploadPath('lands'), 
+          existingLand.image.split('/').pop()
+        );
+        
+        if (existsSync(oldImagePath)) {
+          unlinkSync(oldImagePath);
+        }
+      }
+  
+      
+      // Add new image path to DTO
+      const imageUrl = `lands/${image.filename}`;
+      const dtoWithImage = { ...updateLandDto, image: imageUrl };
+      return this.landService.updateLand(id, dtoWithImage);
+    }
+  
+    // Update without image change
     return this.landService.updateLand(id, updateLandDto);
   }
 

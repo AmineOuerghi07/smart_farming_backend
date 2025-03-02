@@ -22,6 +22,7 @@ import { join } from 'path';
         serveRoot: '/uploads',
         serveStaticOptions: {
           index: false, 
+          redirect: false,
         },
       }),
         LandModule,

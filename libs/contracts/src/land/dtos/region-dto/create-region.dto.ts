@@ -13,4 +13,6 @@ export class CreateRegionDto {
   @IsNotEmpty()
   @IsString()
   sensors: string[];
+  @IsString()
+  plants:string[]
 }
