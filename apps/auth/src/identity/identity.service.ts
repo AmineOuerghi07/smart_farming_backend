@@ -5,18 +5,16 @@ import { CreateUserDto } from './dto/create.user.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { HttpException, HttpStatus } from '@nestjs/common';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { EmailService } from '../services/Email.service'; 
 import { SmsService } from '../services/Sms.service'; 
 import { User } from './entities/user.entity';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
-import { ORDER_NAME } from '@app/contracts/order/order.rmq';
-import { ORDER_PATTERNS } from '@app/contracts/order/order.patterns';
-import { CUSTOMER_PATTERNS } from '@app/contracts/facture/customer/customer.patterns';
 import { LAND_NAME } from '@app/contracts/land/land.rmq';
 import { USER_PATTERNS } from '@app/contracts/land/user.patterns';
 import { UpdateUserDto } from './dto/update.user.dto';
+import { lastValueFrom } from 'rxjs';
+import { RedisService } from '../cache/redis.cache.service';
 
 @Injectable()
 export class IdentityService {
@@ -25,7 +23,8 @@ export class IdentityService {
     @InjectModel(User.name) private userModel: Model<User>,
     private readonly emailService : EmailService, // Assuming the email service is injected
     private readonly smsService: SmsService, // Assuming the SMS service is injected
-    @Inject(LAND_NAME)private landClient : ClientProxy
+    @Inject(LAND_NAME)private landClient : ClientProxy,
+    private cacheService : RedisService
   ) {}
 
   // Register method
@@ -34,6 +33,8 @@ export class IdentityService {
     if (existingUser) {
       throw new RpcException('Email already in use');
     }
+    try
+    {
 
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
@@ -47,6 +48,10 @@ export class IdentityService {
     const savedUser = await newUser.save();
     this.landClient.emit(USER_PATTERNS.CREATE, {_id : savedUser.id ,name : savedUser.fullname, email: savedUser.email, phone : savedUser.phonenumber})
     return { message: 'User registered successfully', user: savedUser };
+  }catch(e)
+  {
+    throw new RpcException("Operation Failed")
+  }
   }
 
   // Login method
@@ -159,13 +164,24 @@ export class IdentityService {
     }
 
 
-    const updatedUser = await this.userModel.findByIdAndUpdate(id, updateData, { new: true });
-    if (!updatedUser) {
+    const user = await this.userModel.findById(id);
+    if (!user) {
       throw new RpcException('User not found');
     }
+    let updatedUser = null
+    try
+    {  
 
-    this.landClient.emit(USER_PATTERNS.UPDATE, {_id : id , name : updatedUser.fullname, email: updatedUser.email, phone : updatedUser.phonenumber})
+    updatedUser = await this.userModel.findByIdAndUpdate(user._id, updateData, {new : true})
+    await this.cacheService.set(id, user, 60)
+  
+      
+    await lastValueFrom(this.landClient.send(USER_PATTERNS.UPDATE, {_id : id , name : updatedUser.fullname, email: updatedUser.email, phone : updatedUser.phonenumber}))
 
+    }catch(e)
+    {
+      throw e
+    }
     return updatedUser;
   }
 
@@ -175,10 +191,19 @@ export class IdentityService {
     if (!deletedUser) {
       throw new RpcException('User not found');
     }
+    try
+    {
 
-    this.landClient.emit(USER_PATTERNS.REMOVE, id)
+      await this.cacheService.set(deletedUser._id.toString(), deletedUser)
 
-    return { message: 'User deleted successfully' };
+      this.landClient.emit(USER_PATTERNS.REMOVE, id)
+
+      return { message: 'User deleted successfully' };
+    }catch(e)
+    {
+      this.cancelRemove(id)
+      throw new RpcException("Deleting failed !!")
+    }
   }
 
   async googleLogin(googleUser: any) {
@@ -223,5 +248,33 @@ export class IdentityService {
       return user;
 
     return null;
+  }
+
+  async cancelRegistration(id : string)
+  {
+    await this.userModel.findByIdAndDelete(id)
+  }
+
+  async cancelUpdate(id: string)
+  {
+    let user : User = await this.cacheService.get(id)
+    //console.log("exception :3")
+    if(user)
+    {
+      await this.userModel.findByIdAndUpdate(id, user , {new : true})
+      //await this.cacheService.del(id)
+    }
+    console.log(user)
+
+  }
+
+  async cancelRemove(id : string)
+  {
+    let user : User = await this.cacheService.get(id)
+    if(user)
+    {
+      this.userModel.create({user , _id : id})
+      await this.cacheService.del(id)
+    }
   }
 }

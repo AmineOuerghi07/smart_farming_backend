@@ -45,7 +45,15 @@ export class AccountController {
 
   @Put('update/:id')
   async updateUser(@Param('id') id: string, @Body() updateData) {
-    return this.accountService.updateUser(id, updateData);
+    try
+    {
+      return await this.accountService.updateUser(id, updateData);
+    }
+    catch(e)
+    {
+      throw new HttpException(`Updating User with id: ${id} failed`, HttpStatus.BAD_REQUEST)
+    }
+    
   }
 
   @Delete('remove/:id')

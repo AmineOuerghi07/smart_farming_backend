@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { OrderAppModule } from './order-app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ORDER_QUEUE } from '@app/contracts/order/order.rmq';
+import { CustomRpcExceptionFilter } from '@app/contracts/errors/filters/rpc.exception.filter';
 
 async function bootstrap() {
  
@@ -15,6 +16,9 @@ async function bootstrap() {
       },
     },
   });
+
+    app.useGlobalFilters(new CustomRpcExceptionFilter());
+  
   await app.listen();
 }
 bootstrap();
