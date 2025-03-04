@@ -117,9 +117,25 @@ export class LandController {
 //-------------------------
 
 @Post('/plant')
-async createPlant(@Body()createPlantDto : CreatePlantDto){
-      return this.landService.createPlant(createPlantDto)
-}
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: getUploadPath('plants'), // Save to assets/plants
+      filename: (req, file, callback) => {
+        const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const ext = file.originalname.split('.').pop();
+        const filename = `plant-${uniqueName}.${ext}`;
+        callback(null, filename);
+      },
+    }),
+  }))
+  async createPlant(
+    @UploadedFile() image: Express.Multer.File,
+    @Body() createPlantDto: CreatePlantDto,
+  ) {
+    const imageUrl = `plants/${image.filename}`; // URL format: /plants/filename
+    const dtoWithImage = { ...createPlantDto, imageUrl }; // Add imageUrl to DTO
+    return this.landService.createPlant(dtoWithImage); // Call service
+  }
 @Get('/plant')
 async findAllPlants(){
   return this.landService.findAllPlant()

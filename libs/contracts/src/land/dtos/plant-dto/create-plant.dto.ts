@@ -1,8 +1,7 @@
-import { IsString, IsNumber, IsUrl } from 'class-validator';
+import { IsString, IsNumber, IsUrl, IsOptional } from 'class-validator';
 
 export class CreatePlantDto {
-  
-  imageUrl: string;
+
 
   @IsString()
   name: string;
@@ -10,6 +9,5 @@ export class CreatePlantDto {
   @IsString()
   description: string;
 
-  @IsNumber()
-  quantity: number;
+ 
 }
