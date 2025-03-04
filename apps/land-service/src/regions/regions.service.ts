@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, ObjectId } from 'mongoose';
+import { Model, ObjectId, Types } from 'mongoose';
 import { CreateRegionDto } from './dto/create-region.dto';
 import { UpdateRegionDto } from './dto/update-region.dto';
 import { Region } from './entities/region.entity';
@@ -34,7 +34,7 @@ export class RegionsService {
   }
 
   async findOne(id: ObjectId): Promise<Region> {
-    return this.regionModel.findById(id).populate('land sensors').exec();
+    return this.regionModel.findById(id).exec();
   }
 
   async update(id: string, updateRegionDto: UpdateRegionDto): Promise<Region> {
@@ -56,4 +56,39 @@ export class RegionsService {
     
     return region;
   }
+  async addPlantToRegion(
+    regionId: string,
+    plantId: string,
+    quantity: number,
+  ): Promise<Region> {
+    const region = await this.regionModel.findById(regionId).exec();
+    
+    console.log('Region:', region);
+    console.log('Region plants:', region?.plants);
+    
+    if (!region) {
+      throw new Error('Region not found');
+    }
+  
+    if (!region.plants) {
+      console.log('Plants is undefined, initializing to []');
+      region.plants = [];
+    }
+  
+    const plantEntry = region.plants.find((p) => p.plant && p.plant.toString() === plantId);
+    if (plantEntry) {
+      plantEntry.quantity += quantity;
+    } else {
+      try {
+        const plantObjectId = new Types.ObjectId(plantId);
+        region.plants.push({ plant: plantObjectId, quantity });
+      } catch (error) {
+        throw new Error('Invalid plantId: must be a valid ObjectId');
+      }
+    }
+    await region.save()
+    return region;
+  }
+
+  
 }

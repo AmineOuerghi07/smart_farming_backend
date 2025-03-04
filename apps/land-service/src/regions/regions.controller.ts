@@ -34,4 +34,14 @@ export class RegionsController {
   remove(@Payload() id: ObjectId) {
     return this.regionsService.remove(id);
   }
+  @MessagePattern(REGION_PATTERNS.REGION_ADD_PLANT) // Define this in your REGION_PATTERNS
+  addPlantToRegion(
+    @Payload() data: { regionId: string; plantId: string; quantity: number },
+  ) {
+    return this.regionsService.addPlantToRegion(
+      data.regionId,
+      data.plantId,
+      data.quantity,
+    );
+  }
 }

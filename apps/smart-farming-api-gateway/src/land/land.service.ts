@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { CreateLandDto } from '@app/contracts/land/dtos/land-dto/create-land.dto';
 import { UpdateLandDto } from '@app/contracts/land/dtos/land-dto/update-land.dto';
@@ -16,6 +16,7 @@ import { SENSOR_PATTERNS } from '@app/contracts/land/sensor.patterns';
 import { CreatePlantDto } from '@app/contracts/land/dtos/plant-dto/create-plant.dto';
 import { UpdatePlantDto } from 'apps/land-service/src/plants/dto/update-plant.dto';
 import { PLANT_PATTERNS } from '@app/contracts/land/plant.patterns';
+import { AddPlantToRegionDto } from '@app/contracts/land/dtos/region-dto/add-plant-to-region.dto';
 
 @Injectable()
 export class LandService {
@@ -92,7 +93,16 @@ export class LandService {
       async removeRegion(id: string) {
         return this.landClient.send<any, string>(REGION_PATTERNS.REMOVE,  id ).toPromise();
       }
+    async addPlantToRegion(addPlantToRegionDto :AddPlantToRegionDto)
+    {
+      const { regionId, plantId, quantity } = addPlantToRegionDto;
+
     
+    if (!regionId || !plantId || !quantity || quantity <= 0) {
+      throw new BadRequestException('regionId, plantId, and a positive quantity are required');
+    }
+        return this.landClient.send<any,AddPlantToRegionDto>(REGION_PATTERNS.REGION_ADD_PLANT,addPlantToRegionDto).toPromise();
+    }
       async updateRegion(id: string, updateRegionDto: UpdateRegionDto) {
         updateRegionDto.id = id;
         return this.landClient.send<any, UpdateRegionDto>(REGION_PATTERNS.UPDATE, updateRegionDto).toPromise();
