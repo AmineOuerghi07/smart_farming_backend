@@ -34,7 +34,7 @@ export class RegionsService {
   }
 
   async findOne(id: ObjectId): Promise<Region> {
-    return this.regionModel.findById(id).exec();
+    return this.regionModel.findById(id).populate('land sensors').exec();
   }
 
   async update(id: string, updateRegionDto: UpdateRegionDto): Promise<Region> {

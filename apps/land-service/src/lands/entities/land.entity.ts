@@ -25,7 +25,7 @@ export class Land {
   user: User;
 
   @Prop([{ type: Types.ObjectId, ref: 'Region' }])
-  regions: Region[];
+  regions:  Region[];
 }
 
 export const LandSchema = SchemaFactory.createForClass(Land);

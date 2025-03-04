@@ -8,8 +8,7 @@ export class Plant {
     name: string;
     @Prop()
     description: string;
-    @Prop()
-    quantity: number;
+
 
 }
 export const PlantSchema = SchemaFactory.createForClass(Plant);

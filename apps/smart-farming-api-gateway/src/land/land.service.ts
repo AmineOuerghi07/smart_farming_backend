@@ -42,6 +42,10 @@ export class LandService {
   async findAllLands() {
     return this.landClient.send(LAND_PATTERNS.FIND_ALL, {}).toPromise();
   }
+
+  async findPlantsByLandId(id: string){
+    return this.landClient.send<any , string>(LAND_PATTERNS.FIND_LAND_PLANTS,id).toPromise()
+  }
   //-------------------------------------------------
   async createUser(createUserDto : CreateUserDto){
     return this.landClient.send(USER_PATTERNS.CREATE ,createUserDto).toPromise()

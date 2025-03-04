@@ -114,6 +114,11 @@ export class LandController {
     return this.landService.removeLand(id);
   }
 
+
+  @Get('land/plants/:id')
+  async getPlantsByLandId(@Param('id') id: string) {
+    return this.landService.findPlantsByLandId(id);
+  }
 //-------------------------
 
 @Post('/plant')
