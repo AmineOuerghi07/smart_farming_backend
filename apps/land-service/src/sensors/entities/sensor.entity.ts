@@ -8,7 +8,11 @@ export class Sensor extends Document {
 
   @Prop()
   type: string;
+  @Prop({ required: true, default: 0 })
+  value: number;
 
+  @Prop({ required: true })
+  threshold: number;
   @Prop({ default: Date.now })
   createdAt: Date;
 }
