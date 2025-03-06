@@ -34,4 +34,10 @@ export class FactureController {
   remove(@Payload() id: string) {
     return this.factureService.remove(id);
   }
+
+  @MessagePattern(FACTURE_PATTERNS.FIND_BY_USER_ID)
+findByUserId(@Payload() userId: string) {
+  return this.factureService.findByUserId(userId);
+}
+
 }
