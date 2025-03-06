@@ -1,4 +1,5 @@
 import { IsString, IsNumber, IsOptional, IsDate } from 'class-validator';
+import { ObjectId } from 'mongoose';
 
 export class CreateFactureDto {
     @IsOptional()
@@ -12,5 +13,9 @@ export class CreateFactureDto {
     @IsOptional()
     @IsDate()
     issueDate?: Date;
+
+    
+  @IsString()
+  userId: ObjectId;
 }
 
