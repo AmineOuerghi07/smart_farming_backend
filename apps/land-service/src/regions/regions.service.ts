@@ -1,31 +1,68 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId, Types } from 'mongoose';
 import { CreateRegionDto } from './dto/create-region.dto';
 import { UpdateRegionDto } from './dto/update-region.dto';
 import { Region } from './entities/region.entity';
 import { Land } from '../lands/entities/land.entity';
+import { Sensor } from '../sensors/entities/sensor.entity';
+import { NotificationsGateway } from 'apps/notification/src/notifications/notifications.gateway';
 
 @Injectable()
-export class RegionsService {
+export class RegionsService implements OnModuleInit {
+  private notifiedSensors: Set<string> = new Set(); // Track notified sensors
+
   constructor(
     @InjectModel(Region.name) private regionModel: Model<Region>,
-    @InjectModel(Land.name) private landModel: Model<Land>
+    @InjectModel(Land.name) private landModel: Model<Land>,
+    @InjectModel(Sensor.name) private sensorModel: Model<Sensor>,
+    private readonly notificationsGateway: NotificationsGateway
   ) {}
+
+  onModuleInit() {
+    setInterval(async () => {
+      console.log('Checking sensor values...');
+      const regions = await this.regionModel.find().populate('sensors land').exec();
+
+      for (const region of regions) {
+        for (const sensor of region.sensors as Sensor[]) {
+          const sensorId = sensor._id.toString();
+          const isAboveThreshold = sensor.value > sensor.threshold;
+
+          if (isAboveThreshold && !this.notifiedSensors.has(sensorId)) {
+            // Sensor is above threshold and hasn’t been notified yet
+            const land = region.land as Land;
+            if (land) {
+              const populatedLand = await this.landModel.findById(land).populate('user').exec();
+              if (populatedLand && populatedLand.user) {
+                const userId = populatedLand.user._id.toString();
+                const message = `Alert! Sensor "${sensor.name}" in region "${region.name}" (Land: ${land.name}) has value ${sensor.value} > threshold ${sensor.threshold}`;
+                this.notificationsGateway.sendUserNotification(userId, message);
+                this.notifiedSensors.add(sensorId); // Mark as notified
+                console.log(`Notification sent for sensor ${sensorId}`);
+              }
+            }
+          } else if (!isAboveThreshold && this.notifiedSensors.has(sensorId)) {
+            // Sensor dropped below threshold, reset notification status
+            this.notifiedSensors.delete(sensorId);
+            console.log(`Reset notification status for sensor ${sensorId}`);
+          }
+        }
+      }
+    }, 5000); // Keep polling every 5 seconds
+  }
 
   async create(createRegionDto: CreateRegionDto): Promise<Region> {
     const region = new this.regionModel({
       ...createRegionDto,
       land: createRegionDto.land,
-      sensor: createRegionDto.sensors
+      sensors: createRegionDto.sensors, // Fixed typo: 'sensor' -> 'sensors'
     });
-    
-    // Update parent land
-    await this.landModel.findByIdAndUpdate(
-      createRegionDto.land,
-      { $push: { regions: region._id } }
-    );
-    
+
+    await this.landModel.findByIdAndUpdate(createRegionDto.land, {
+      $push: { regions: region._id },
+    });
+
     return region.save();
   }
 
@@ -38,55 +75,35 @@ export class RegionsService {
   }
 
   async update(id: string, updateRegionDto: UpdateRegionDto): Promise<Region> {
-    return await this.regionModel.findByIdAndUpdate(
-      id,
-      updateRegionDto,
-      { new: true }
-    ).populate('land sensors').exec();
+    return await this.regionModel
+      .findByIdAndUpdate(id, updateRegionDto, { new: true })
+      .populate('land sensors')
+      .exec();
   }
 
   async remove(id: ObjectId): Promise<Region> {
     const region = await this.regionModel.findByIdAndDelete(id).exec();
-    
-    // Remove from parent land
-    await this.landModel.findByIdAndUpdate(
-      region.land,
-      { $pull: { regions: region._id } }
-    );
-    
+    await this.landModel.findByIdAndUpdate(region.land, {
+      $pull: { regions: region._id },
+    });
     return region;
   }
-  async addPlantToRegion(
-    regionId: string,
-    plantId: string,
-    quantity: number,
-  ): Promise<Region> {
+
+  async addPlantToRegion(regionId: string, plantId: string, quantity: number): Promise<Region> {
     const region = await this.regionModel.findById(regionId).exec();
-    
-    console.log('Region:', region);
-    console.log('Region plants:', region?.plants);
-    
-    if (!region) {
-      throw new Error('Region not found');
-    }
-  
-    if (!region.plants) {
-      console.log('Plants is undefined, initializing to []');
-      region.plants = [];
-    }
-  
+
+    if (!region) throw new Error('Region not found');
+
+    if (!region.plants) region.plants = [];
+
     const plantEntry = region.plants.find((p) => p.plant && p.plant.toString() === plantId);
     if (plantEntry) {
       plantEntry.quantity += quantity;
     } else {
-      try {
-        const plantObjectId = new Types.ObjectId(plantId);
-        region.plants.push({ plant: plantObjectId, quantity });
-      } catch (error) {
-        throw new Error('Invalid plantId: must be a valid ObjectId');
-      }
+      const plantObjectId = new Types.ObjectId(plantId);
+      region.plants.push({ plant: plantObjectId, quantity });
     }
-    await region.save()
+    await region.save();
     return region;
   }
 
@@ -97,35 +114,24 @@ export class RegionsService {
     value: number,
     threshold: number
   ): Promise<Region> {
-    // Validate region exists
     const region = await this.regionModel.findById(regionId).exec();
-    if (!region) {
-      throw new Error('Region not found');
+    if (!region) throw new Error('Region not found');
+
+    if (!region.sensors) region.sensors = [];
+
+    const sensorObjectId = new Types.ObjectId(sensorId);
+    if (!region.sensors.some((sensor) => sensor.toString() === sensorId)) {
+      region.sensors.push(sensorObjectId);
     }
 
-    if (!region.sensors) {
-      region.sensors = [];
-    }
+    // Update or create sensor
+    await this.sensorModel.findByIdAndUpdate(
+      sensorId,
+      { name: sensorName, value, threshold },
+      { upsert: true, new: true }
+    );
 
-    try {
-      const sensorObjectId = new Types.ObjectId(sensorId);
-      // Check if sensor already exists in the region
-      const sensorExists = region.sensors.some(
-        (sensor) => sensor.toString() === sensorId
-      );
-
-      if (!sensorExists) {
-        // Since sensors is an array of ObjectId references, this is correct
-        region.sensors.push(sensorObjectId);
-      }
-
-      const updatedRegion = await region.save();
-      return this.regionModel
-        .findById(updatedRegion._id)
-        .populate('land sensors')
-        .exec();
-    } catch (error) {
-      throw new Error('Invalid sensorId: must be a valid ObjectId');
-    }
+    const updatedRegion = await region.save();
+    return this.regionModel.findById(updatedRegion._id).populate('land sensors').exec();
   }
 }

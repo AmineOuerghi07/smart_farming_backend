@@ -21,8 +21,8 @@ export class Land {
   @Prop()
   image: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  user: User;
+  @Prop({ type: 'ObjectId', ref: 'User' }) // Reference to User
+  user: Types.ObjectId | User;
 
   @Prop([{ type: Types.ObjectId, ref: 'Region' }])
   regions:  Region[];

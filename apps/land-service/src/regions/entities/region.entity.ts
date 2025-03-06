@@ -14,7 +14,7 @@ export class Region extends Document {
   land: Land;
 
   @Prop([{ type: 'ObjectId', ref: 'Sensor' }])
-  sensors: Types.ObjectId[];
+  sensors: (Types.ObjectId | Sensor)[];
   @Prop({
     type: [{
       plant: { type: 'ObjectId', ref: 'Plant' },
