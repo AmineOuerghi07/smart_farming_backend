@@ -22,17 +22,7 @@ import { ORDER_NAME, ORDER_QUEUE } from '@app/contracts/order/order.rmq';
           signOptions: { expiresIn: '1h' }  // Token expiration options
         }),
 
-        CacheModule.registerAsync({  
-          isGlobal: true,  
-          useFactory: async () => ({  
-            store: await redisStore({  
-              socket: {  
-                host: 'localhost',  
-                port: 6379,  
-              },        
-            }),      
-          }),    
-        }),  
+ 
         
        
 

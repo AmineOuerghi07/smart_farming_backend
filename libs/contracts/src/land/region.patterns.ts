@@ -5,5 +5,6 @@ export const REGION_PATTERNS =
     CREATE : 'region.create',
     UPDATE : 'region.update',
     REMOVE : 'region.remove',
-    REGION_ADD_PLANT:'region.addPlant'
+    REGION_ADD_PLANT:'region.addPlant',
+    REGION_ADD_SENSOR: 'region.addSensor'
 }

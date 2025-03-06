@@ -17,6 +17,7 @@ import { CreatePlantDto } from '@app/contracts/land/dtos/plant-dto/create-plant.
 import { UpdatePlantDto } from 'apps/land-service/src/plants/dto/update-plant.dto';
 import { PLANT_PATTERNS } from '@app/contracts/land/plant.patterns';
 import { AddPlantToRegionDto } from '@app/contracts/land/dtos/region-dto/add-plant-to-region.dto';
+import { AddSensorToRegionDto } from '@app/contracts/land/dtos/region-dto/add-sensor-to-region.dto';
 
 @Injectable()
 export class LandService {
@@ -106,6 +107,19 @@ export class LandService {
       throw new BadRequestException('regionId, plantId, and a positive quantity are required');
     }
         return this.landClient.send<any,AddPlantToRegionDto>(REGION_PATTERNS.REGION_ADD_PLANT,addPlantToRegionDto).toPromise();
+    }
+    async addSensorToRegion(addSensorToRegionDto: AddSensorToRegionDto) {
+      const { regionId, sensorId, sensorName, value, threshold } = addSensorToRegionDto;
+  
+      // Validation
+      if (!regionId || !sensorId || !sensorName || value === undefined || threshold === undefined) {
+        throw new BadRequestException('regionId, sensorId, sensorName, value, and threshold are required');
+      }
+  
+ 
+      return this.landClient
+        .send<any, AddSensorToRegionDto>(REGION_PATTERNS.REGION_ADD_SENSOR, addSensorToRegionDto)
+        .toPromise(); 
     }
       async updateRegion(id: string, updateRegionDto: UpdateRegionDto) {
         updateRegionDto.id = id;

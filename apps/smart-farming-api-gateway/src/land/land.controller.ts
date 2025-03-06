@@ -16,6 +16,7 @@ import { existsSync, mkdirSync, unlinkSync } from 'fs';
 import { CreatePlantDto } from '@app/contracts/land/dtos/plant-dto/create-plant.dto';
 import { UpdatePlantDto } from '@app/contracts/land/dtos/plant-dto/update-plant.dto';
 import { AddPlantToRegionDto } from '@app/contracts/land/dtos/region-dto/add-plant-to-region.dto';
+import { AddSensorToRegionDto } from '@app/contracts/land/dtos/region-dto/add-sensor-to-region.dto';
 
 const landAssetsPath = join(__dirname, '..', '..', 'assets', 'lands');
 export const getUploadPath = (subdirectory: string) => {
@@ -224,7 +225,11 @@ async deletePlant(@Param('id') id: string)
   {
     return this.landService.addPlantToRegion(addPlantToRegionDto)
   }
-
+  @Post('/region/addSensor')
+  async addSensorToRegion(@Body() addSensorToRegionDto : AddSensorToRegionDto)
+  {
+    return this.landService.addSensorToRegion(addSensorToRegionDto)
+  }
   @Get('/region/:id')
  async findOneRegion(@Param('id')id :string){
         return this.landService.findOneRegion(id)

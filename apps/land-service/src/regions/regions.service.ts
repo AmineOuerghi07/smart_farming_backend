@@ -90,5 +90,42 @@ export class RegionsService {
     return region;
   }
 
-  
+  async addSensorToRegion(
+    regionId: string,
+    sensorId: string,
+    sensorName: string,
+    value: number,
+    threshold: number
+  ): Promise<Region> {
+    // Validate region exists
+    const region = await this.regionModel.findById(regionId).exec();
+    if (!region) {
+      throw new Error('Region not found');
+    }
+
+    if (!region.sensors) {
+      region.sensors = [];
+    }
+
+    try {
+      const sensorObjectId = new Types.ObjectId(sensorId);
+      // Check if sensor already exists in the region
+      const sensorExists = region.sensors.some(
+        (sensor) => sensor.toString() === sensorId
+      );
+
+      if (!sensorExists) {
+        // Since sensors is an array of ObjectId references, this is correct
+        region.sensors.push(sensorObjectId);
+      }
+
+      const updatedRegion = await region.save();
+      return this.regionModel
+        .findById(updatedRegion._id)
+        .populate('land sensors')
+        .exec();
+    } catch (error) {
+      throw new Error('Invalid sensorId: must be a valid ObjectId');
+    }
+  }
 }
