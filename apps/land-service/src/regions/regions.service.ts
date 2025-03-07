@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId, Types } from 'mongoose';
 import { CreateRegionDto } from './dto/create-region.dto';
@@ -6,7 +6,8 @@ import { UpdateRegionDto } from './dto/update-region.dto';
 import { Region } from './entities/region.entity';
 import { Land } from '../lands/entities/land.entity';
 import { Sensor } from '../sensors/entities/sensor.entity';
-import { NotificationsGateway } from 'apps/notification/src/notifications/notifications.gateway';
+import { ClientProxy } from '@nestjs/microservices';
+import { NOTIFICATION_EVENTS } from '@app/contracts/notification/notification.events';
 
 @Injectable()
 export class RegionsService implements OnModuleInit {
@@ -16,7 +17,7 @@ export class RegionsService implements OnModuleInit {
     @InjectModel(Region.name) private regionModel: Model<Region>,
     @InjectModel(Land.name) private landModel: Model<Land>,
     @InjectModel(Sensor.name) private sensorModel: Model<Sensor>,
-    private readonly notificationsGateway: NotificationsGateway
+    @Inject('NOTIFICATION_SERVICE') private readonly notificationClient: ClientProxy
   ) {}
 
   onModuleInit() {
@@ -30,14 +31,26 @@ export class RegionsService implements OnModuleInit {
           const isAboveThreshold = sensor.value > sensor.threshold;
 
           if (isAboveThreshold && !this.notifiedSensors.has(sensorId)) {
-            // Sensor is above threshold and hasn’t been notified yet
+            // Sensor is above threshold and hasn't been notified yet
             const land = region.land as Land;
             if (land) {
               const populatedLand = await this.landModel.findById(land).populate('user').exec();
               if (populatedLand && populatedLand.user) {
                 const userId = populatedLand.user._id.toString();
                 const message = `Alert! Sensor "${sensor.name}" in region "${region.name}" (Land: ${land.name}) has value ${sensor.value} > threshold ${sensor.threshold}`;
-                this.notificationsGateway.sendUserNotification(userId, message);
+                
+                // Emit notification event through RabbitMQ
+                this.notificationClient.emit(NOTIFICATION_EVENTS.SYSTEM_NOTIFICATION, {
+                  userId,
+                  title: 'Sensor Alert',
+                  message,
+                  metadata: {
+                    sensorId,
+                    regionId: region._id,
+                    landId: land
+                  }
+                }).subscribe();
+
                 this.notifiedSensors.add(sensorId); // Mark as notified
                 console.log(`Notification sent for sensor ${sensorId}`);
               }

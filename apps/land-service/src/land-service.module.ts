@@ -1,29 +1,31 @@
 // land-service.module.ts
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UsersModule } from './users/users.module';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { RegionsModule } from './regions/regions.module';
 import { LandsModule } from './lands/lands.module';
 import { SensorsModule } from './sensors/sensors.module';
-import { CacheModule } from '@nestjs/cache-manager';
-import { redisStore } from 'cache-manager-redis-yet';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
-import { PlantsModule } from './plants/plants.module';
+import { NOTIFICATION_NAME, NOTIFICATION_QUEUE } from '@app/contracts/notification/notification.rmq';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(process.env.MONGO_URI || 'mongodb://localhost:27017/land-service'),
-    UsersModule,
+    MongooseModule.forRoot('mongodb://localhost:27017/smart-farming'),
+    ClientsModule.register([
+      {
+        name: NOTIFICATION_NAME,
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://localhost:5672'],
+          queue: NOTIFICATION_QUEUE,
+          queueOptions: {
+            durable: false
+          },
+        },
+      },
+    ]),
     RegionsModule,
     LandsModule,
     SensorsModule,
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'assets'), 
-      serveRoot: '/uploads', 
-    }),
-    PlantsModule,
   ],
-  
 })
 export class LandServiceModule {}
