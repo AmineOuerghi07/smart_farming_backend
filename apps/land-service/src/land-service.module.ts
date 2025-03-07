@@ -9,7 +9,17 @@ import { NOTIFICATION_NAME, NOTIFICATION_QUEUE } from '@app/contracts/notificati
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017/smart-farming'),
+    MongooseModule.forRoot('mongodb://127.0.0.1:27017/land-service', {
+      connectionFactory: (connection) => {
+        connection.on('connected', () => {
+          console.log('MongoDB connected successfully');
+        });
+        connection.on('error', (error) => {
+          console.error('MongoDB connection error:', error);
+        });
+        return connection;
+      }
+    }),
     ClientsModule.register([
       {
         name: NOTIFICATION_NAME,
