@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { CreateLandDto } from './dto/create-land.dto';
@@ -102,5 +102,15 @@ export class LandsService {
     } catch (error) {
       throw new Error(`Failed to fetch plants for land ${landId}: ${error.message}`);
     }
+  }
+
+  async findLandsByUserId(userId: string): Promise<Land[]> {
+    const lands = await this.landModel.find({ user: userId }).exec();
+  
+    if (lands.length === 0) {
+      throw new NotFoundException(`No lands found for user with ID ${userId}`);
+    }
+  
+    return lands;
   }
 }

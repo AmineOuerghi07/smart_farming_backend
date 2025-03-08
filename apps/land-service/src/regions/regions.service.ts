@@ -127,9 +127,14 @@ export class RegionsService implements OnModuleInit {
       } catch (error) {
         this.logger.error('Error in sensor check cycle:', error);
       }
-    }, 5000); // Keep polling every 5 seconds
+    }, 10000); // Keep polling every 5 seconds
   }
-
+  async findByLandIds(landIds: string[]): Promise<Region[]> {
+    return this.regionModel
+      .find({ land: { $in: landIds } })
+      .populate('land sensors')
+      .exec();
+  }
   async create(createRegionDto: CreateRegionDto): Promise<Region> {
     this.logger.log(`Creating new region: ${JSON.stringify(createRegionDto)}`);
     const region = new this.regionModel({

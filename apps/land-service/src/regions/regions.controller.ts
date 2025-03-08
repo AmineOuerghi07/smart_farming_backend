@@ -63,5 +63,8 @@ addSensorToRegion(
     data.threshold
   );
 }
-  
+@MessagePattern(REGION_PATTERNS.FIND_BY_LAND_IDS)
+  findByLandIds(@Payload() landIds: string[]) {
+    return this.regionsService.findByLandIds(landIds);
+  }
 }

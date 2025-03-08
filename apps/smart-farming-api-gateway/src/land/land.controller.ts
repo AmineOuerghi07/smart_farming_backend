@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, UploadedFile, UseInterceptors, NotFoundException } from '@nestjs/common';
 import { LandService } from './land.service';
 import { CreateLandDto } from '@app/contracts/land/dtos/land-dto/create-land.dto';
 import { UpdateLandDto } from '@app/contracts/land/dtos/land-dto/update-land.dto';
@@ -120,6 +120,12 @@ export class LandController {
   async getPlantsByLandId(@Param('id') id: string) {
     return this.landService.findPlantsByLandId(id);
   }
+
+
+  @Get('users/:id')
+  async findLandsByUserId(@Param('id') id: string) {
+    return this.landService.findLandsByUserId(id);
+  }
 //-------------------------
 
 @Post('/plant')
@@ -215,6 +221,15 @@ async deletePlant(@Param('id') id: string)
   @Post('/region')
   async createRegion(@Body()createRegionDto : CreateRegionDto){
         return this.landService.createRegion(createRegionDto)
+  }
+
+  @Get('region/users/:userId')
+  async findRegionsByUserId(@Param('userId') userId: string) {
+    try {
+      return await this.landService.findRegionsByUserId(userId);
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
   @Get('/region')
   async findAllRegion(){

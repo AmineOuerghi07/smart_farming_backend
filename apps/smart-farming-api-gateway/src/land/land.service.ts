@@ -87,9 +87,26 @@ export class LandService {
   async findAllPlant() {
     return this.landClient.send(PLANT_PATTERNS.FIND_ALL, {}).toPromise();
   }
+  async findLandsByUserId(userId: string) {
+    if (!userId) {
+        throw new Error(' User ID is required but received undefined/null');
+    }
+
+
+    return this.landClient.send(LAND_PATTERNS.FIND_BY_USER_ID, userId).toPromise();
+}
     //-------------------------------------------------
     async createRegion(createRegionDto : CreateRegionDto){
         return this.landClient.send(REGION_PATTERNS.CREATE ,createRegionDto).toPromise()
+      }
+
+      async findRegionsByUserId(userId: string) {
+        const lands = await this.findLandsByUserId(userId);
+        if (!lands || lands.length === 0) {
+          return [];
+        }
+        const landIds = lands.map((land) => land._id);
+        return this.landClient.send(REGION_PATTERNS.FIND_BY_LAND_IDS, landIds).toPromise();
       }
       async findOneRegion(id: string) {
         return this.landClient.send<any, string>(REGION_PATTERNS.FIND_ONE,  id ).toPromise();
