@@ -13,6 +13,7 @@ export class ProductController {
   create(@Payload() createProductDto: CreateProductDto) {
     return this.productService.create(createProductDto);
   }
+  
 
   @MessagePattern(PRODUCT_PATTERNS.FIND_ALL)
   findAll() {
