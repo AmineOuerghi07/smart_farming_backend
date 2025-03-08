@@ -12,16 +12,16 @@ export class ProductService {
   }
 
   async create({
-    name, description, price, quantity, stockQuantity, createdAt, updatedAt }) {
-    return this.client.send(PRODUCT_PATTERNS.CREATE, { name, description, price, quantity, stockQuantity, createdAt, updatedAt })
+    name,category, description, price, quantity, stockQuantity, createdAt, updatedAt }) {
+    return this.client.send(PRODUCT_PATTERNS.CREATE, { name,category, description, price, quantity, stockQuantity, createdAt, updatedAt })
   }
 
   async findOne(id) {
     return this.client.send(PRODUCT_PATTERNS.FIND_ONE, id)
   }
 
-  async update({ id, name, description, price, quantity, stockQuantity, createdAt, updatedAt }) {
-    return this.client.send(PRODUCT_PATTERNS.UPDATE, { id, name, description, price, quantity, stockQuantity, createdAt, updatedAt })
+  async update({ id,category, name, description, price, quantity, stockQuantity, createdAt, updatedAt }) {
+    return this.client.send(PRODUCT_PATTERNS.UPDATE, { id,category, name, description, price, quantity, stockQuantity, createdAt, updatedAt })
   }
 
   async remove(id) {
