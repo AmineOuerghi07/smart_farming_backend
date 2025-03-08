@@ -5,6 +5,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { OtpModule } from './otp/otp.module';
+import { redisStore } from 'cache-manager-redis-yet';
+import { CacheModule } from '@nestjs/cache-manager';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ORDER_NAME, ORDER_QUEUE } from '@app/contracts/order/order.rmq';
 
 
 @Module({
@@ -14,9 +18,13 @@ import { OtpModule } from './otp/otp.module';
     AuthModule,
     JwtModule.register({ 
           global: true,
-          secretOrPrivateKey: 'secretKey_YouCANWritewateverulikeheesecretKey_YouCANWritewateverulikehee',
+          privateKey: 'secretKey_YouCANWritewateverulikeheesecretKey_YouCANWritewateverulikehee',
           signOptions: { expiresIn: '1h' }  // Token expiration options
         }),
+
+ 
+        
+       
 
     MongooseModule.forRoot(process.env.DATABASE_URL ?? "mongodb://localhost:27017/farm"),
 

@@ -7,26 +7,27 @@ import { Model } from 'mongoose';
 
 @Injectable()
 export class ProductService {
-  constructor(@InjectModel(Product.name) private poductModel: Model<Product> ) {}
+  constructor(@InjectModel(Product.name) private productModel: Model<Product> ) {}
 
   create(createProductDto: CreateProductDto) {
-    return new this.poductModel(createProductDto).save();
+    console.log('Saving to DB:', createProductDto); // Debug log
+    return new this.productModel(createProductDto).save();
   }
 
   findAll() {
-    return this.poductModel.find();
+    return this.productModel.find();
   }
 
   findOne(id: string) {
-    return this.poductModel.findById(id);
+    return this.productModel.findById(id);
   }
 
   update(id: string, updateProductDto: UpdateProductDto) {
-    return this.poductModel.findByIdAndUpdate
+    return this.productModel.findByIdAndUpdate
     (id, updateProductDto, {new: true});
   }
 
   remove(id: string) {
-    return this.poductModel.findByIdAndDelete(id);
+    return this.productModel.findByIdAndDelete(id);
   }
 }

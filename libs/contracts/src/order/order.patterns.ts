@@ -5,4 +5,5 @@ export const ORDER_PATTERNS =
     CREATE : 'order.create',
     UPDATE : 'order.update',
     REMOVE : 'order.remove',
+    USER_CREATED : 'order.createUser'
 }
