@@ -5,14 +5,16 @@ import { IsOptional, IsString } from "class-validator";
 export class Product {
     @Prop({ required: true })
     name: string;
+
+    @Prop({ required: true })
+    category: string;
+
     @Prop({ required: false })
     description: string;
     @Prop({ required: true })
     category: string;
     @Prop({ required: true })
     price: number;
-    @Prop({ required: false })
-    quantity: number;
     @Prop({ required: true })
     stockQuantity: number;
     @Prop({ required: false })
@@ -22,5 +24,5 @@ export class Product {
     @Prop()
     image?: string;
 
-} 
+}
 export const ProductSchema = SchemaFactory.createForClass(Product);

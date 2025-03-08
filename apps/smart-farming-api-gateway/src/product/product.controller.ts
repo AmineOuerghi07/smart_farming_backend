@@ -58,6 +58,7 @@ export class ProductController {
     const filePath = file ? `products/${file.filename}` : null;
     const dtoWithFile = { ...createProductDto, image: filePath };
 
+
     console.log('dtoWithFile:', dtoWithFile); // Debug log
     return this.productService.create(dtoWithFile);
   }

@@ -4,8 +4,12 @@ export class CreateProductDto {
     @IsString()
     @IsNotEmpty()
     name: string;
+
+
     @IsNotEmpty()
     category: string;
+    
+
     @IsString()
     @IsOptional()
     description?: string;
@@ -20,6 +24,7 @@ export class CreateProductDto {
     quantity?: number;
 
 
+
     @IsNumber()
     @Min(0)
     stockQuantity: number;
@@ -27,4 +32,3 @@ export class CreateProductDto {
   @IsOptional()
   image?: string;
 }
- 
