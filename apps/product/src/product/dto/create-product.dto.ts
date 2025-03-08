@@ -5,6 +5,9 @@ export class CreateProductDto {
     @IsNotEmpty()
     name: string;
 
+    @IsNotEmpty()
+    category: string;
+    
     @IsString()
     @IsOptional()
     description?: string;
@@ -19,8 +22,8 @@ export class CreateProductDto {
     quantity?: number;
 
 
+
     @IsNumber()
     @Min(0)
     stockQuantity: number;
 }
- 
