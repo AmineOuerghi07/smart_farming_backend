@@ -85,6 +85,7 @@ export class LandService {
   }
 
   async findAllPlant() {
+    console.log('Sending pattern:', PLANT_PATTERNS.FIND_ALL);
     return this.landClient.send(PLANT_PATTERNS.FIND_ALL, {}).toPromise();
   }
   async findLandsByUserId(userId: string) {

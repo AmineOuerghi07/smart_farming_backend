@@ -150,6 +150,7 @@ export class LandController {
   }
 @Get('/plant')
 async findAllPlants(){
+  
   return this.landService.findAllPlant()
 }
 @Get('/plant/:id')
