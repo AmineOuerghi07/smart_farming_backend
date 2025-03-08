@@ -20,17 +20,7 @@ import { redisStore } from 'cache-manager-redis-yet';
       }
     ])
     , ProductModule, MongooseModule.forRoot('mongodb://localhost/product'),
-     CacheModule.registerAsync({  
-                isGlobal: true,  
-                useFactory: async () => ({  
-                  store: await redisStore({  
-                    socket: {  
-                      host: 'localhost',  
-                      port: 6379,  
-                    },        
-                  }),      
-                }),    
-          }),  
+    
     ],
   controllers: [ProductController],
   providers: [ProductService],
