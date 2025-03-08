@@ -11,9 +11,7 @@ import { EmailService } from '../services/Email.service';
 import { SmsService } from '../services/Sms.service'; 
 import { User } from './entities/user.entity';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
-import { ORDER_NAME } from '@app/contracts/order/order.rmq';
-import { ORDER_PATTERNS } from '@app/contracts/order/order.patterns';
-import { CUSTOMER_PATTERNS } from '@app/contracts/facture/customer/customer.patterns';
+
 import { LAND_NAME } from '@app/contracts/land/land.rmq';
 import { USER_PATTERNS } from '@app/contracts/land/user.patterns';
 import { UpdateUserDto } from './dto/update.user.dto';
