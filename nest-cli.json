@@ -10,13 +10,58 @@
   "monorepo": true,
   "root": "apps/smart-farming-api-gateway",
   "projects": {
-    "smart-farming-api-gateway": {
+    "auth": {
       "type": "application",
-      "root": "apps/smart-farming-api-gateway",
+      "root": "apps/auth",
       "entryFile": "main",
-      "sourceRoot": "apps/smart-farming-api-gateway/src",
+      "sourceRoot": "apps/auth/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/smart-farming-api-gateway/tsconfig.app.json"
+        "tsConfigPath": "apps/auth/tsconfig.app.json"
+      }
+    },
+    "contracts": {
+      "type": "library",
+      "root": "libs/contracts",
+      "entryFile": "index",
+      "sourceRoot": "libs/contracts/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/contracts/tsconfig.lib.json"
+      }
+    },
+    "facture": {
+      "type": "application",
+      "root": "apps/facture",
+      "entryFile": "main",
+      "sourceRoot": "apps/facture/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/facture/tsconfig.app.json"
+      }
+    },
+    "inventory": {
+      "type": "application",
+      "root": "apps/inventory",
+      "entryFile": "main",
+      "sourceRoot": "apps/inventory/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/inventory/tsconfig.app.json"
+      }
+    },
+    "land-service": {
+      "type": "application",
+      "root": "apps/land-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/land-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/land-service/tsconfig.app.json"
+      }
+    },
+    "notification": {
+      "type": "application",
+      "root": "apps/notification",
+      "entryFile": "main",
+      "sourceRoot": "apps/notification/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/notification/tsconfig.app.json"
       }
     },
     "order": {
@@ -37,34 +82,24 @@
         "tsConfigPath": "apps/product/tsconfig.app.json"
       }
     },
-    "user": {
+    "sensor-service": {
       "type": "application",
-      "root": "apps/user",
+      "root": "apps/sensor-service",
       "entryFile": "main",
-      "sourceRoot": "apps/user/src",
+      "sourceRoot": "apps/sensor-service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/user/tsconfig.app.json"
+        "tsConfigPath": "apps/sensor-service/tsconfig.app.json"
       }
     },
-    "contracts": {
-      "type": "library",
-      "root": "libs/contracts",
-      "entryFile": "index",
-      "sourceRoot": "libs/contracts/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/contracts/tsconfig.lib.json"
-      }
-    },
-    "inventory": {
+    "smart-farming-api-gateway": {
       "type": "application",
-      "root": "apps/inventory",
+      "root": "apps/smart-farming-api-gateway",
       "entryFile": "main",
-      "sourceRoot": "apps/inventory/src",
+      "sourceRoot": "apps/smart-farming-api-gateway/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/inventory/tsconfig.app.json"
+        "tsConfigPath": "apps/smart-farming-api-gateway/tsconfig.app.json"
       }
     },
-
     "stock": {
       "type": "application",
       "root": "apps/stock",
@@ -74,31 +109,13 @@
         "tsConfigPath": "apps/stock/tsconfig.app.json"
       }
     },
-    "facture": {
+    "user": {
       "type": "application",
-      "root": "apps/facture",
+      "root": "apps/user",
       "entryFile": "main",
-      "sourceRoot": "apps/facture/src",
+      "sourceRoot": "apps/user/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/facture/tsconfig.app.json"
-
-    "land-service": {
-      "type": "application",
-      "root": "apps/land-service",
-      "entryFile": "main",
-      "sourceRoot": "apps/land-service/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/land-service/tsconfig.app.json"
-      }
-    },
-    "sensor-service": {
-      "type": "application",
-      "root": "apps/sensor-service",
-      "entryFile": "main",
-      "sourceRoot": "apps/sensor-service/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/sensor-service/tsconfig.app.json"
-
+        "tsConfigPath": "apps/user/tsconfig.app.json"
       }
     }
   }

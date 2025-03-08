@@ -1,4 +1,4 @@
-export const Facture_PATTERNS =
+export const FACTURE_PATTERNS =
 {
     FIND_ALL: 'facture.findAll',
     FIND_ONE: 'facture.findOne',

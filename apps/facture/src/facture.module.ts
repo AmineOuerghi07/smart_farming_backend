@@ -7,6 +7,8 @@ import { ProductModule } from './product/product.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { FACTURE_NAME, FACTURE_QUEUE } from '@app/contracts/facture/facture.rmq';
 import { CustomerModule } from './customer/customer.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-redis-yet';
 @Module({
   imports: [
     ClientsModule.register([
@@ -19,6 +21,18 @@ import { CustomerModule } from './customer/customer.module';
         },
       }
     ]),
+    CacheModule.registerAsync({  
+          isGlobal: true,  
+          useFactory: async () => ({  
+            store: await redisStore({  
+              socket: {  
+                host: 'localhost',  
+                port: 6379,  
+              },        
+            }),      
+          }),    
+    }), 
+    
     FactureModule,
     MongooseModule.forRoot('mongodb://localhost/facture'),
     CustomerModule,

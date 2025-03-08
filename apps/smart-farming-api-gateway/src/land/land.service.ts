@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { CreateLandDto } from '@app/contracts/land/dtos/land-dto/create-land.dto';
 import { UpdateLandDto } from '@app/contracts/land/dtos/land-dto/update-land.dto';
@@ -13,6 +13,11 @@ import { REGION_PATTERNS } from '@app/contracts/land/region.patterns';
 import { CreateSensorDto } from '@app/contracts/land/dtos/sensor-dto/create-sensor.dto';
 import { UpdateSensorDto } from '@app/contracts/land/dtos/sensor-dto/update-sensor.dto';
 import { SENSOR_PATTERNS } from '@app/contracts/land/sensor.patterns';
+import { CreatePlantDto } from '@app/contracts/land/dtos/plant-dto/create-plant.dto';
+import { UpdatePlantDto } from 'apps/land-service/src/plants/dto/update-plant.dto';
+import { PLANT_PATTERNS } from '@app/contracts/land/plant.patterns';
+import { AddPlantToRegionDto } from '@app/contracts/land/dtos/region-dto/add-plant-to-region.dto';
+import { AddSensorToRegionDto } from '@app/contracts/land/dtos/region-dto/add-sensor-to-region.dto';
 
 @Injectable()
 export class LandService {
@@ -38,12 +43,16 @@ export class LandService {
   async findAllLands() {
     return this.landClient.send(LAND_PATTERNS.FIND_ALL, {}).toPromise();
   }
+
+  async findPlantsByLandId(id: string){
+    return this.landClient.send<any , string>(LAND_PATTERNS.FIND_LAND_PLANTS,id).toPromise()
+  }
   //-------------------------------------------------
   async createUser(createUserDto : CreateUserDto){
     return this.landClient.send(USER_PATTERNS.CREATE ,createUserDto).toPromise()
   }
   async findOneUser(id: string) {
-    return this.landClient.send<any, string>(USER_PATTERNS.FIND_ONE,  id ).toPromise();
+    return await this.landClient.send<any, string>(USER_PATTERNS.FIND_ONE,  id ).toPromise();
   }
 
   async removeUser(id: string) {
@@ -58,9 +67,46 @@ export class LandService {
   async findAllUser() {
     return this.landClient.send(USER_PATTERNS.FIND_ALL, {}).toPromise();
   }
+  //--------------------------------------------------------
+  async createPlant(createPlantDto : CreatePlantDto){
+    return this.landClient.send(PLANT_PATTERNS.CREATE ,createPlantDto).toPromise()
+  }
+  async findOnePlant(id: string) {
+    return await this.landClient.send<any, string>(PLANT_PATTERNS.FIND_ONE,  id ).toPromise();
+  }
+
+  async removePlant(id: string) {
+    return this.landClient.send<any, string>(PLANT_PATTERNS.REMOVE,  id ).toPromise();
+  }
+
+  async updatePlant(id: string, updatePlantDto: UpdatePlantDto) {
+    updatePlantDto.id = id;
+    return this.landClient.send(PLANT_PATTERNS.UPDATE, updatePlantDto).toPromise();
+  }
+
+  async findAllPlant() {
+    return this.landClient.send(PLANT_PATTERNS.FIND_ALL, {}).toPromise();
+  }
+  async findLandsByUserId(userId: string) {
+    if (!userId) {
+        throw new Error(' User ID is required but received undefined/null');
+    }
+
+
+    return this.landClient.send(LAND_PATTERNS.FIND_BY_USER_ID, userId).toPromise();
+}
     //-------------------------------------------------
     async createRegion(createRegionDto : CreateRegionDto){
         return this.landClient.send(REGION_PATTERNS.CREATE ,createRegionDto).toPromise()
+      }
+
+      async findRegionsByUserId(userId: string) {
+        const lands = await this.findLandsByUserId(userId);
+        if (!lands || lands.length === 0) {
+          return [];
+        }
+        const landIds = lands.map((land) => land._id);
+        return this.landClient.send(REGION_PATTERNS.FIND_BY_LAND_IDS, landIds).toPromise();
       }
       async findOneRegion(id: string) {
         return this.landClient.send<any, string>(REGION_PATTERNS.FIND_ONE,  id ).toPromise();
@@ -69,7 +115,29 @@ export class LandService {
       async removeRegion(id: string) {
         return this.landClient.send<any, string>(REGION_PATTERNS.REMOVE,  id ).toPromise();
       }
+    async addPlantToRegion(addPlantToRegionDto :AddPlantToRegionDto)
+    {
+      const { regionId, plantId, quantity } = addPlantToRegionDto;
+
     
+    if (!regionId || !plantId || !quantity || quantity <= 0) {
+      throw new BadRequestException('regionId, plantId, and a positive quantity are required');
+    }
+        return this.landClient.send<any,AddPlantToRegionDto>(REGION_PATTERNS.REGION_ADD_PLANT,addPlantToRegionDto).toPromise();
+    }
+    async addSensorToRegion(addSensorToRegionDto: AddSensorToRegionDto) {
+      const { regionId, sensorId, sensorName, value, threshold } = addSensorToRegionDto;
+  
+      // Validation
+      if (!regionId || !sensorId || !sensorName || value === undefined || threshold === undefined) {
+        throw new BadRequestException('regionId, sensorId, sensorName, value, and threshold are required');
+      }
+  
+ 
+      return this.landClient
+        .send<any, AddSensorToRegionDto>(REGION_PATTERNS.REGION_ADD_SENSOR, addSensorToRegionDto)
+        .toPromise(); 
+    }
       async updateRegion(id: string, updateRegionDto: UpdateRegionDto) {
         updateRegionDto.id = id;
         return this.landClient.send<any, UpdateRegionDto>(REGION_PATTERNS.UPDATE, updateRegionDto).toPromise();

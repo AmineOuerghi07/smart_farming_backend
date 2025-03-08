@@ -34,4 +34,13 @@ export class LandsController {
   remove(@Payload() id: ObjectId) {
     return this.landsService.remove(id);
   }
+
+  @MessagePattern(LAND_PATTERNS.FIND_LAND_PLANTS)
+  getPlantsByLandId(@Payload() id: ObjectId) {
+    return this.landsService.getPlantsByLandId(id);
+  }
+  @MessagePattern(LAND_PATTERNS.FIND_BY_USER_ID)
+  async findLandsByUserId(userId: string) {
+      return this.landsService.findLandsByUserId(userId);
+  }
 }

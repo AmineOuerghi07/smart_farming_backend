@@ -7,7 +7,9 @@ import { Sensor } from './entities/sensor.entity';
 
 @Injectable()
 export class SensorsService {
-  constructor(@InjectModel(Sensor.name) private sensorModel: Model<Sensor>) {}
+  constructor(
+    @InjectModel(Sensor.name) private sensorModel: Model<Sensor>
+  ) {}
 
   async create(createSensorDto: CreateSensorDto): Promise<Sensor> {
     const createdSensor = new this.sensorModel(createSensorDto);
@@ -23,11 +25,7 @@ export class SensorsService {
   }
 
   async update(id: ObjectId, updateSensorDto: UpdateSensorDto): Promise<Sensor> {
-    return this.sensorModel.findByIdAndUpdate(
-      id,
-      updateSensorDto,
-      { new: true }
-    ).exec();
+    return this.sensorModel.findByIdAndUpdate(id, updateSensorDto, { new: true }).exec();
   }
 
   async remove(id: ObjectId): Promise<Sensor> {
