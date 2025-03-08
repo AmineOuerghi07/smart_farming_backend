@@ -6,6 +6,7 @@ import { RegionsModule } from './regions/regions.module';
 import { LandsModule } from './lands/lands.module';
 import { SensorsModule } from './sensors/sensors.module';
 import { NOTIFICATION_NAME, NOTIFICATION_QUEUE } from '@app/contracts/notification/notification.rmq';
+import { PlantsModule } from './plants/plants.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { NOTIFICATION_NAME, NOTIFICATION_QUEUE } from '@app/contracts/notificati
     RegionsModule,
     LandsModule,
     SensorsModule,
+    PlantsModule
   ],
 })
 export class LandServiceModule {}

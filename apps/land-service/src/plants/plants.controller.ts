@@ -16,6 +16,7 @@ export class PlantsController {
 
   @MessagePattern(PLANT_PATTERNS.FIND_ALL)
   findAll() {
+    console.log('Received pattern:', PLANT_PATTERNS.FIND_ALL);
     return this.plantsService.findAll();
   }
 

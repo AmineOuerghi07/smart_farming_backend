@@ -11,6 +11,7 @@ import { SensorsModule } from './sensors/sensors.module';
 import { AccountModule } from './account/account.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { PlantsModule } from 'apps/land-service/src/plants/plants.module';
 
 @Module({
   imports: [OrderModule,
@@ -27,7 +28,8 @@ import { join } from 'path';
       }),
         LandModule,
          SensorsModule,
-          AccountModule
+          AccountModule,
+      
            ],
   controllers: [SmartFarmingApiGatewayController],
   providers: [SmartFarmingApiGatewayService],
