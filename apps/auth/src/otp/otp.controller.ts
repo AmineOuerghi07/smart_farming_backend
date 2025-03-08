@@ -21,7 +21,7 @@ export class OtpController {
 
   @MessagePattern(OTP_PATTERNS.VERIFY_OTP)
   async verifyOtp(@Payload() command : { otp: string, userId : string }) {
-    return this.otpService.verifyOtp(command);
+    return this.otpService.verifyOtp(command.userId, command.otp);
   }
   @MessagePattern(OTP_PATTERNS.RESET_PASSWORD)
   async resetPasswordOtp(@Payload() command : ResetPasswordDto) {

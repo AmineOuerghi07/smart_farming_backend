@@ -76,5 +76,17 @@ export class IdentityController {
         return this.identityService.googleLogin(command);
     }
 
+    @MessagePattern(AUTH_PATTERNS.FIND_ONE)
+    async findOne(@Payload() command) {
+        try {
+            const user = await this.identityService.findOne(command.id);
+            if (!user) {
+                throw new Error('User not found');
+            }
+            return user;
+        } catch (error) {
+            throw error;
+        }
+    }
 
 }

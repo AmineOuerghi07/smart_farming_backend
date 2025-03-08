@@ -5,15 +5,13 @@ import { CreateUserDto } from './dto/create.user.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { HttpException, HttpStatus } from '@nestjs/common';
-import { ResetPasswordDto } from './dto/reset-password.dto';
+
+
 import { EmailService } from '../services/Email.service'; 
 import { SmsService } from '../services/Sms.service'; 
 import { User } from './entities/user.entity';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
-import { ORDER_NAME } from '@app/contracts/order/order.rmq';
-import { ORDER_PATTERNS } from '@app/contracts/order/order.patterns';
-import { CUSTOMER_PATTERNS } from '@app/contracts/facture/customer/customer.patterns';
+
 import { LAND_NAME } from '@app/contracts/land/land.rmq';
 import { USER_PATTERNS } from '@app/contracts/land/user.patterns';
 import { UpdateUserDto } from './dto/update.user.dto';
@@ -51,22 +49,24 @@ export class IdentityService {
 
   // Login method
   async login(loginDto: LoginDto) {
+    console.log('Login attempt:', loginDto);
     const user = await this.userModel.findOne({ email: loginDto.email });
     if (!user) {
       throw new RpcException('Invalid credentials');
     }
-
+    console.log('Stored user password:', user.password);
+  
     const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+    console.log('Password comparison result:', isPasswordValid);
     if (!isPasswordValid) {
       throw new RpcException('Invalid credentials');
     }
-
+  
     const payload = { id: user._id, email: user.email, roles: user.roles };
     const token = this.jwtService.sign(payload);
-
+  
     return { message: 'Login successful', token };
   }
-
   // Validate JWT Token
   validateToken(jwt: string) {
     try {
@@ -103,29 +103,7 @@ export class IdentityService {
   }
 
   // Reset Password functionality
-  async resetPassword(resetPasswordDto: ResetPasswordDto) {
-    const { token, newPassword } = resetPasswordDto;
-
-    let decoded;
-    try {
-      decoded = this.jwtService.verify(token, { secret: 'your-reset-secret' });
-    } catch (error) {
-      throw new RpcException('Invalid or expired token');
-    }
-
-    const user = await this.userModel.findById(decoded.id);
-    if (!user) {
-      throw new RpcException('User not found');
-    }
-
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
-    user.password = hashedPassword;
-    await user.save();
-
-    return { message: 'Password updated successfully' };
-  }
-
+ 
   // Method to send reset token (either via email or SMS)
   sendResetToken(user: User, resetToken: string) {
     if (user.email) {
@@ -152,23 +130,15 @@ export class IdentityService {
 
   //  Update User
   async updateUser(id: string, updateData: UpdateUserDto) {
-
-    if(updateData.password)
-    {
-      updateData.password = await bcrypt.hash(updateData.password, 10)
-    }
-
-
+    console.log('Updating user:', { id, updateData });
     const updatedUser = await this.userModel.findByIdAndUpdate(id, updateData, { new: true });
     if (!updatedUser) {
       throw new RpcException('User not found');
     }
-
-    this.landClient.emit(USER_PATTERNS.UPDATE, {_id : id , name : updatedUser.fullname, email: updatedUser.email, phone : updatedUser.phonenumber})
-
+    console.log('Updated user from DB:', updatedUser);
+    this.landClient.emit(USER_PATTERNS.UPDATE, { _id: id, name: updatedUser.fullname, email: updatedUser.email, phone: updatedUser.phonenumber });
     return updatedUser;
   }
-
   // Delete User
   async deleteUser(id: string) {
     const deletedUser = await this.userModel.findByIdAndDelete(id);

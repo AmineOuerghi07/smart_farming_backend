@@ -44,5 +44,27 @@ export class RegionsController {
       data.quantity,
     );
   }
-  
+
+  @MessagePattern(REGION_PATTERNS.REGION_ADD_SENSOR)
+addSensorToRegion(
+  @Payload() data: { 
+    regionId: string;
+    sensorId: string;
+    sensorName: string;
+    value: number;
+    threshold: number;
+  }
+) {
+  return this.regionsService.addSensorToRegion(
+    data.regionId,
+    data.sensorId,
+    data.sensorName,
+    data.value,
+    data.threshold
+  );
+}
+@MessagePattern(REGION_PATTERNS.FIND_BY_LAND_IDS)
+  findByLandIds(@Payload() landIds: string[]) {
+    return this.regionsService.findByLandIds(landIds);
+  }
 }
