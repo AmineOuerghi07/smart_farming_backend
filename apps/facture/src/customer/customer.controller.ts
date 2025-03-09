@@ -24,13 +24,37 @@ export class CustomerController {
     return await this.customerService.findOne(id);
   }
 
-  @EventPattern(CUSTOMER_PATTERNS.UPDATE)
+  @MessagePattern(CUSTOMER_PATTERNS.UPDATE)
   async update(@Payload() payload: UpdateCustomerDto) {
-    return await this.customerService.update(payload._id.toString(), payload);
+    try {
+      return await this.customerService.update(payload._id.toString(), payload);
+
+    } catch (e) {
+      throw e
+    }
   }
 
   @EventPattern(CUSTOMER_PATTERNS.REMOVE)
   async remove(@Payload() id: string) {
     return await this.customerService.remove(id);
+  }
+
+ 
+  @EventPattern(CUSTOMER_PATTERNS.CANCEL_CREATION)
+  async cancelCreation(id : string)
+  {
+    await this.customerService.cancelCreation(id)
+  }
+
+  @EventPattern(CUSTOMER_PATTERNS.CANCEL_UPDATE)
+  async cancelRemove(id : string)
+  {
+    await this.customerService.cancelUpdate(id)
+  }
+
+  @EventPattern(CUSTOMER_PATTERNS.CANCEL_REMOVE)
+  async cancelUpdate(id : string)
+  {
+    await this.customerService.cancelRemove(id)
   }
 }

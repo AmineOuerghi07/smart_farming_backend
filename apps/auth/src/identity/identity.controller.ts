@@ -1,5 +1,5 @@
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
-import { Ctx, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
+import { Ctx, EventPattern, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
 import { IdentityService } from './identity.service';
 import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from '../guards/auth.guard';
@@ -32,9 +32,17 @@ export class IdentityController {
        
         console.log('command user: ', command.email);
         //const channel = context.getChannelRef();
-        let response = await this.identityService.login(command);
-        //channel.ack(context.getMessage());
-        return response;
+
+        try
+        {
+            let response = await this.identityService.login(command);
+            //channel.ack(context.getMessage());
+            return response;
+        }catch(e)
+        {
+            throw e;
+        }
+        
         
     }
   
@@ -76,6 +84,23 @@ export class IdentityController {
         return this.identityService.googleLogin(command);
     }
 
+    @EventPattern(AUTH_PATTERNS.CANCEL_REGISTER)
+    async cancelRegister(id : string)
+    {
+        await this.identityService.cancelRegistration(id)
+    }
+
+    @EventPattern(AUTH_PATTERNS.CANCEL_REMOVE)
+    async cancelRemove(id : string)
+    {
+        await this.identityService.cancelRemove(id)
+    }
+
+    @EventPattern(AUTH_PATTERNS.CANCEL_UPDATE)
+    async cancelUpdate(id : string)
+    {
+        await this.identityService.cancelUpdate(id)
+    }
     @MessagePattern(AUTH_PATTERNS.FIND_ONE)
     async findOne(@Payload() command) {
         try {

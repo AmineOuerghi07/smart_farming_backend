@@ -62,7 +62,15 @@ export class AccountService {
 
   ///
   public async updateUser(id: string, updateData: any) {
-    return this.client.send(AUTH_PATTERNS.UPDATE_USER, { id, updateData });
+    try
+    {
+      return await lastValueFrom(this.client.send(AUTH_PATTERNS.UPDATE_USER, { id, updateData }));  
+    }catch(e)
+    {
+      console.log("Error in update ?")
+      throw e;
+    }
+    
   }
 
   // Delete User
