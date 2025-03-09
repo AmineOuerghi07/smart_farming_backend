@@ -40,7 +40,7 @@ import { PlantsModule } from './plants/plants.module';
     RegionsModule,
     LandsModule,
     SensorsModule,
-    RedisCache
+    RedisCache,
     
     PlantsModule
   ],
