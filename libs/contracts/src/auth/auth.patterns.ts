@@ -8,5 +8,6 @@ export const AUTH_PATTERNS =
     GOOGLE_LOGIN : 'auth.google.login',
     CANCEL_REGISTER: 'auth.cancelRegister',
     CANCEL_REMOVE: 'auth.cancelRemove',
-    CANCEL_UPDATE: 'auth.cancelUpdate'
+    CANCEL_UPDATE: 'auth.cancelUpdate',
+    FIND_ONE: 'auth.find.one'
 }

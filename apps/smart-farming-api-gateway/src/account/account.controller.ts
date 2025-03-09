@@ -88,7 +88,21 @@ async resetPasswordOtp(@Body() req : ResetPasswordDto) {
   return this.accountService.resetPasswordOtp(req);
 }
 
-
+@Get('get-account/:id')
+async getAccountById(@Param('id') id: string) {
+  try {
+    const account = await this.accountService.findOne(id);
+    if (!account) {
+      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+    }
+    return account;
+  } catch (error) {
+    if (error instanceof HttpException) {
+      throw error;
+    }
+    throw new HttpException('Error fetching account', HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
 
 }
 

@@ -12,14 +12,31 @@ import { AccountModule } from './account/account.module';
 import { makeCounterProvider, makeGaugeProvider, PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { CustomMetricsMiddleware } from './middleware/custom-metrics-middleware';
 
+
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { PlantsModule } from 'apps/land-service/src/plants/plants.module';
+
 @Module({
-  imports: [OrderModule, InventoryModule, ProductModule, FactureModule,
-    LandModule,
-    SensorsModule,
-    AccountModule,
-    PrometheusModule.register({
+  imports: [OrderModule,
+     InventoryModule,
+      ProductModule,
+       FactureModule,
+       ServeStaticModule.forRoot({
+        rootPath: join(process.cwd(), 'assets'), 
+        serveRoot: '/uploads',
+        serveStaticOptions: {
+          index: false, 
+          redirect: false,
+        },
+      }),
+        LandModule,
+         SensorsModule,
+          AccountModule,
+            PrometheusModule.register({
       path: '/metrics',
     }),],
+
   controllers: [SmartFarmingApiGatewayController],
   providers: [SmartFarmingApiGatewayService,
     makeCounterProvider({

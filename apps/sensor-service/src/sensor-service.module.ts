@@ -9,18 +9,7 @@ import { redisStore } from 'cache-manager-redis-yet';
   imports: [
      MongooseModule.forRoot(process.env.MONGO_URI || 'mongodb://localhost:27017/sensor-service'),
      RegionsModule,
-     SensorsModule,
-     CacheModule.registerAsync({  
-                isGlobal: true,  
-                useFactory: async () => ({  
-                  store: await redisStore({  
-                    socket: {  
-                      host: 'localhost',  
-                      port: 6379,  
-                    },        
-                  }),      
-                }),    
-          }), ],
+     SensorsModule],
 
 })
 export class SensorServiceModule {}

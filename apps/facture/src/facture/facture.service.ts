@@ -9,9 +9,15 @@ import { Model } from 'mongoose';
 export class FactureService {
   constructor(@InjectModel(Facture.name) private factureModel: Model<Facture>) {}
   
-  create(createFactureDto: CreateFactureDto) {
-    return this.factureModel.create(createFactureDto);
+  create(createFactureDto: CreateFactureDto): Promise<Facture> {
+    const createdFacture = new this.factureModel({
+      ...createFactureDto,
+      user: createFactureDto.userId, 
+    });
+    return createdFacture.save();
   }
+
+ 
 
   findAll() {
     return this.factureModel.find();
@@ -29,4 +35,9 @@ export class FactureService {
   remove(id: string) {
     return this.factureModel.findByIdAndDelete(id);
   }
+
+   async findByUserId(userId: string) {
+    return this.factureModel.find({ userId }).exec();
+  }
+  
 }

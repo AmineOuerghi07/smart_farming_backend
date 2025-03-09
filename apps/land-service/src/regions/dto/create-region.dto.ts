@@ -1,5 +1,5 @@
 // src/regions/dto/create-region.dto.ts
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateRegionDto {
   @IsNotEmpty()
@@ -10,7 +10,14 @@ export class CreateRegionDto {
   @IsString()
   land: string;
 
+  @IsOptional()
+  @IsNumber()
+  surface?: number;
+
   @IsNotEmpty()
   @IsString()
-  sensors: string [];
+  sensors: string[];
+
+  @IsString()
+  plants: string[];
 }

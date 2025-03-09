@@ -103,4 +103,7 @@ export class AccountService {
     return this.client.send<any, ResetPasswordDto>(OTP_PATTERNS.RESET_PASSWORD, command);
   }
   
+  public async findOne(id: string): Promise<any> {
+    return lastValueFrom(this.client.send(AUTH_PATTERNS.FIND_ONE, { id }));
+  }
 }

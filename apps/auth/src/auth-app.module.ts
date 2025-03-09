@@ -20,7 +20,7 @@ import { OtpModule } from './otp/otp.module';
           signOptions: { expiresIn: '1h' }  // Token expiration options
         }),
 
-       
+
         
        
 

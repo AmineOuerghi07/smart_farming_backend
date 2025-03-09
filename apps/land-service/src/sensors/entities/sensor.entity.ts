@@ -6,11 +6,11 @@ export class Sensor extends Document {
   @Prop({ required: true })
   name: string;
 
-  @Prop()
-  type: string;
+  @Prop({ required: true })
+  value: number;
 
-  @Prop({ default: Date.now })
-  createdAt: Date;
+  @Prop({ required: true })
+  threshold: number;
 }
 
 export const SensorSchema = SchemaFactory.createForClass(Sensor);

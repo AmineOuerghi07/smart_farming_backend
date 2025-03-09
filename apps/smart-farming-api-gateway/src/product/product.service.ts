@@ -1,7 +1,9 @@
+import { CreateProductDto } from '@app/contracts/product/dto/create-product.dto';
 import { PRODUCT_PATTERNS } from '@app/contracts/product/product.patterns';
 import { PRODUCT_NAME } from '@app/contracts/product/product.rmq';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class ProductService {
@@ -11,18 +13,20 @@ export class ProductService {
     return this.client.send(PRODUCT_PATTERNS.FIND_ALL, {})
   }
 
-  async create({
-    name, description, price, quantity, stockQuantity, createdAt, updatedAt }) {
-    return this.client.send(PRODUCT_PATTERNS.CREATE, { name, description, price, quantity, stockQuantity, createdAt, updatedAt })
-  }
+  async create(createProductDto: CreateProductDto) {
+    console.log('Sending to microservice:', createProductDto); // Debug log
+    return lastValueFrom(this.client.send(PRODUCT_PATTERNS.CREATE, createProductDto));
 
+  }
   async findOne(id) {
     return this.client.send(PRODUCT_PATTERNS.FIND_ONE, id)
   }
 
-  async update({ id, name, description, price, quantity, stockQuantity, createdAt, updatedAt }) {
-    return this.client.send(PRODUCT_PATTERNS.UPDATE, { id, name, description, price, quantity, stockQuantity, createdAt, updatedAt })
-  }
+  async update(updateProductDto: any) {
+    console.log('Sending to microservice:', updateProductDto); // Debug log
+    return lastValueFrom(this.client.send(PRODUCT_PATTERNS.UPDATE, updateProductDto));
+}
+
 
   async remove(id) {
     return this.client.send(PRODUCT_PATTERNS.REMOVE, id)
