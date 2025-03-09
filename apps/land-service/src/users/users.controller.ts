@@ -26,16 +26,40 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
-  @EventPattern(USER_PATTERNS.UPDATE)
+  @MessagePattern(USER_PATTERNS.UPDATE)
   async update(@Payload() updateUserDto: UpdateUserDto) {
     console.log(updateUserDto)
-    let user = await this.usersService.update(updateUserDto._id.toString(), updateUserDto);
-    console.log(user)
-    return user;
+    try
+    {
+      let user = await this.usersService.update(updateUserDto._id.toString(), updateUserDto);
+      console.log(user)
+      return user;
+    }catch(e)
+    {
+      throw e;
+    }
   }
 
   @EventPattern(USER_PATTERNS.REMOVE)
   async remove(@Payload() id: string) {
-    return this.usersService.remove(id);
+    return await this.usersService.remove(id);
+  }
+
+  @EventPattern(USER_PATTERNS.USER_CANCEL_CREATION)
+  async cancelCreate(@Payload() id : string)
+  {
+    await this.usersService.cancelCreation(id)
+  }
+
+  @EventPattern(USER_PATTERNS.USER_CANCEL_UPDATE)
+  async cancelUpdate(@Payload() id : string)
+  {
+    await this.usersService.cancelUpdate(id)
+  }
+
+  @EventPattern(USER_PATTERNS.USER_CANCEL_REMOVE)
+  async cancelRemove(@Payload() id : string)
+  {
+    await this.usersService.cancelRemove(id)
   }
 }
