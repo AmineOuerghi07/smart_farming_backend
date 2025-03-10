@@ -5,8 +5,7 @@ import { ProductModule } from './product/product.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { PRODUCT_NAME, PRODUCT_QUEUE } from '@app/contracts/product/product.rmq';
-import { CacheModule } from '@nestjs/cache-manager';
-import { redisStore } from 'cache-manager-redis-yet';
+
 
 @Module({
   imports: [
@@ -20,17 +19,7 @@ import { redisStore } from 'cache-manager-redis-yet';
       }
     ])
     , ProductModule, MongooseModule.forRoot('mongodb://localhost/product'),
-     CacheModule.registerAsync({  
-                isGlobal: true,  
-                useFactory: async () => ({  
-                  store: await redisStore({  
-                    socket: {  
-                      host: 'localhost',  
-                      port: 6379,  
-                    },        
-                  }),      
-                }),    
-          }),  
+    
     ],
   controllers: [ProductController],
   providers: [ProductService],

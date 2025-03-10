@@ -85,6 +85,7 @@ export class LandService {
   }
 
   async findAllPlant() {
+    console.log('Sending pattern:', PLANT_PATTERNS.FIND_ALL);
     return this.landClient.send(PLANT_PATTERNS.FIND_ALL, {}).toPromise();
   }
   async findLandsByUserId(userId: string) {
@@ -97,7 +98,7 @@ export class LandService {
 }
     //-------------------------------------------------
     async createRegion(createRegionDto : CreateRegionDto){
-        return this.landClient.send(REGION_PATTERNS.CREATE ,createRegionDto).toPromise()
+        return this.landClient.send<any, CreateRegionDto>(REGION_PATTERNS.CREATE ,createRegionDto).toPromise()
       }
 
       async findRegionsByUserId(userId: string) {

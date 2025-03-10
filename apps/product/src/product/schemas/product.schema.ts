@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { IsOptional, IsString } from "class-validator";
 
 @Schema()
 export class Product {
@@ -10,6 +11,7 @@ export class Product {
 
     @Prop({ required: false })
     description: string;
+   
     @Prop({ required: true })
     price: number;
     @Prop({ required: true })
@@ -18,6 +20,8 @@ export class Product {
     createdAt: Date;
     @Prop({ required: false })
     updatedAt: Date;
+    @Prop()
+    image?: string;
 
 }
 export const ProductSchema = SchemaFactory.createForClass(Product);

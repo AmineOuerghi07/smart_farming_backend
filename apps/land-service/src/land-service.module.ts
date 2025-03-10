@@ -5,7 +5,11 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { RegionsModule } from './regions/regions.module';
 import { LandsModule } from './lands/lands.module';
 import { SensorsModule } from './sensors/sensors.module';
+import { RedisCache } from './cache/redis.cache.module';
+
+
 import { NOTIFICATION_NAME, NOTIFICATION_QUEUE } from '@app/contracts/notification/notification.rmq';
+import { PlantsModule } from './plants/plants.module';
 
 @Module({
   imports: [
@@ -36,6 +40,9 @@ import { NOTIFICATION_NAME, NOTIFICATION_QUEUE } from '@app/contracts/notificati
     RegionsModule,
     LandsModule,
     SensorsModule,
+    RedisCache,
+    
+    PlantsModule
   ],
 })
 export class LandServiceModule {}
