@@ -98,7 +98,7 @@ export class LandService {
 }
     //-------------------------------------------------
     async createRegion(createRegionDto : CreateRegionDto){
-        return this.landClient.send(REGION_PATTERNS.CREATE ,createRegionDto).toPromise()
+        return this.landClient.send<any, CreateRegionDto>(REGION_PATTERNS.CREATE ,createRegionDto).toPromise()
       }
 
       async findRegionsByUserId(userId: string) {

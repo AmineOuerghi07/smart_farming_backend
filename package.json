@@ -20,7 +20,7 @@
     "test:e2e": "jest --config ./apps/smart_farming/test/jest-e2e.json"
   },
   "dependencies": {
-    "@nestjs/cache-manager": "^2.2.2",
+    "@nestjs/cache-manager": "^3.0.0",
     "@getbrevo/brevo": "^2.2.0",
     "@nestjs/common": "^11.0.10",
     "@nestjs/config": "^4.0.0",
@@ -42,7 +42,7 @@
     "amqp-connection-manager": "^4.1.14",
     "amqplib": "^0.10.5",
     "bcrypt": "^5.1.1",
-    "cache-manager": "^5.7.6",
+    "cache-manager": "^6.4.1",
     "cache-manager-redis-store": "^3.0.1",
     "cacheable": "^1.8.8",
     "class-transformer": "^0.5.1",

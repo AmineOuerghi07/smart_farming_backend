@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Land } from "../../lands/entities/land.entity";
 import { Sensor } from "../../sensors/entities/sensor.entity";
-import { Document, Types } from 'mongoose';
+import {  Types } from 'mongoose';
 import { Plant } from "../../plants/entities/plant.entity";
 
 @Schema()
-export class Region extends Document {
+export class Region  {
   @Prop({ required: true })
   name: string;
   @Prop()
