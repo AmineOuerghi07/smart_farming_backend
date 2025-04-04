@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, ObjectId } from 'mongoose';
+import { Model, ObjectId, Types } from 'mongoose';
 import { CreateLandDto } from './dto/create-land.dto';
 import { UpdateLandDto } from './dto/update-land.dto';
 import { Land } from './entities/land.entity';
@@ -103,7 +103,38 @@ export class LandsService {
       throw new Error(`Failed to fetch plants for land ${landId}: ${error.message}`);
     }
   }
+  async setLandForRent(landId: string, userId: string, rentPrice: number): Promise<Land> {
+    const land = await this.landModel.findOne({
+      _id: new Types.ObjectId(landId),
+      user: new Types.ObjectId(userId), // Ensure the user owns the land
+    }).exec();
 
+    if (!land) {
+      throw new NotFoundException(`Land with ID ${landId} not found or not owned by user ${userId}`);
+    }
+
+    // If rentPrice > 0, set forRent to true; if 0, set forRent to false
+    land.forRent = rentPrice > 0;
+    land.rentPrice = rentPrice;
+
+    return land.save();
+  }
+
+  // New method: Fetch all lands for rent
+  async findLandsForRent(): Promise<Land[]> {
+    try {
+      console.log('Fetching lands for rent...');
+      const lands = await this.landModel
+        .find({ forRent: true })
+        .populate('user regions')
+        .exec();
+      console.log(`Found ${lands.length} lands for rent`);
+      return lands;
+    } catch (error) {
+      console.error(`Error in findLandsForRent: ${error.message}`);
+      throw error;
+    }
+  }
   async findLandsByUserId(userId: string): Promise<Land[]> {
     const lands = await this.landModel.find({ user: userId }).exec();
   
