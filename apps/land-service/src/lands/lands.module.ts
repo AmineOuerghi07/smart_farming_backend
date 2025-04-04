@@ -11,6 +11,6 @@ import { Land, LandSchema } from './entities/land.entity';
   ],
   controllers: [LandsController],
   providers: [LandsService],
-  exports: [MongooseModule.forFeature([{ name: Land.name, schema: LandSchema }])]
+  exports: [MongooseModule.forFeature([{ name: Land.name, schema: LandSchema }]), LandsService],
 })
 export class LandsModule {}

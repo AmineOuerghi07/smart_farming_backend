@@ -67,4 +67,8 @@ addSensorToRegion(
   findByLandIds(@Payload() landIds: string[]) {
     return this.regionsService.findByLandIds(landIds);
   }
+@MessagePattern(REGION_PATTERNS.FIND_CONNECTED_REGIONS)
+  findConnectedRegions(@Payload() userId: string) {
+    return this.regionsService.findConnectedRegions(userId);
+  }
 }

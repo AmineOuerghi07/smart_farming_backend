@@ -6,5 +6,7 @@ export const LAND_PATTERNS =
     UPDATE : 'land.update',
     REMOVE : 'land.remove',
     FIND_LAND_PLANTS : 'land.getPlantsByLandId',
-    FIND_BY_USER_ID : 'land.findByUserId'
+    FIND_BY_USER_ID : 'land.findByUserId',
+    SET_LAND_FOR_RENT : 'land.setLandForRent',
+    FIND_LAND_FOR_RENT : 'land.findLandForRent',
 }
