@@ -173,13 +173,13 @@ services:
     image: grafana/grafana:11.6.0
     container_name: grafana
     ports:
-      - "3305:3305"
+      - "3306:3306"
     networks:
       - smart-farming-backend
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_HTTP_PORT=3305
+      - GF_SERVER_HTTP_PORT=3306
     depends_on:
       - prometheus
     restart: unless-stopped
@@ -218,3 +218,4 @@ volumes:
     driver: local
   grafana-storage:
     driver: local
+  
