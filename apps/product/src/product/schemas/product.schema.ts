@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { IsOptional, IsString } from "class-validator";
 
-@Schema()
+@Schema({ timestamps: true })
 export class Product {
     @Prop({ required: true })
     name: string;

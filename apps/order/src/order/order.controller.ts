@@ -15,14 +15,14 @@ export class OrderController {
     orderDTO.totalAmount = payload.totalAmount;
     orderDTO.customerId = null;
     orderDTO.orderStatus = payload.orderStatus;
-    orderDTO.orderItems = []
+    orderDTO.orderItems = payload.orderItems;
     return orderDTO;
   }
 
   @MessagePattern(ORDER_PATTERNS.CREATE)
-  create(@Payload() createOrderDto: any) {
-    let dto: CreateOrderDto = OrderController.mapOrderPayload(createOrderDto);
-    return this.orderService.create(dto);
+  create(@Payload() createOrderDto: CreateOrderDto) {
+
+    return this.orderService.create(createOrderDto);
   }
 
   @MessagePattern(ORDER_PATTERNS.FIND_ALL)

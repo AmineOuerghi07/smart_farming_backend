@@ -21,10 +21,9 @@ export class CreateOrderDto {
     @IsString()
     orderStatus: string; // You can add enum validation if needed
 
-    @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
-    @Type(() => OrderItemDto)
+    @Type(() => OrderItemDto)  // ✅ Ensures correct transformation
     orderItems: OrderItemDto[];
 
     @IsNotEmpty()
