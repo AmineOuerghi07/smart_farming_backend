@@ -23,7 +23,7 @@ import { LandService } from 'apps/smart-farming-api-gateway/src/land/land.servic
         name: NOTIFICATION_NAME,
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://localhost:5672'],
+          urls: [ process.env.RABBITMQ_URL ?? 'amqp://localhost:5672'],
           queue: NOTIFICATION_QUEUE,
           queueOptions: {
             durable: false

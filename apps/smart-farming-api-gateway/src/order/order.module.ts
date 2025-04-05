@@ -11,7 +11,7 @@ import { ORDER_NAME, ORDER_QUEUE } from '@app/contracts/order/order.rmq';
         name: ORDER_NAME,
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://localhost:5672'],
+          urls: [process.env.RABBITMQ_URL ?? 'amqp://localhost:5672'],
           queue: ORDER_QUEUE,
           queueOptions: {
             durable: false

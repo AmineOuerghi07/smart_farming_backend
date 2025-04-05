@@ -19,7 +19,7 @@ import { LAND_NAME, LAND_QUEUE } from '@app/contracts/land/land.rmq';
         
           transport: Transport.RMQ,
           options: {
-          urls: ['amqp://localhost:5672'],
+          urls: [process.env.RABBITMQ_URL ?? 'amqp://localhost:5672'],
           queue: FACTURE_QUEUE,
           queueOptions: {
             durable: false,
@@ -34,7 +34,7 @@ import { LAND_NAME, LAND_QUEUE } from '@app/contracts/land/land.rmq';
       
         transport: Transport.RMQ,
         options: {
-        urls: ['amqp://localhost:5672'],
+        urls: [process.env.RABBITMQ_URL ?? 'amqp://localhost:5672'],
         queue: LAND_QUEUE,
         queueOptions: {
           durable: false,

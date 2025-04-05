@@ -17,8 +17,8 @@ import { CreatePlantDto } from '@app/contracts/land/dtos/plant-dto/create-plant.
 import { UpdatePlantDto } from '@app/contracts/land/dtos/plant-dto/update-plant.dto';
 import { AddPlantToRegionDto } from '@app/contracts/land/dtos/region-dto/add-plant-to-region.dto';
 import { AddSensorToRegionDto } from '@app/contracts/land/dtos/region-dto/add-sensor-to-region.dto';
-import { Region } from 'apps/land-service/src/regions/entities/region.entity';
-import { AuthGuard } from '@nestjs/passport';
+
+
 
 const landAssetsPath = join(__dirname, '..', '..', 'assets', 'lands');
 export const getUploadPath = (subdirectory: string) => {

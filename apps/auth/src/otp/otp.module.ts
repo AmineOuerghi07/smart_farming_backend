@@ -4,12 +4,14 @@ import { OtpController } from './otp.controller';
 import { Otp, OtpSchema } from './entities/otp.entity';
 import { MongooseModule } from '@nestjs/mongoose';
 import { IdentityModule } from '../identity/identity.module';
-import { EmailService } from '../services/Email.service';
-import { SmsService } from '../services/Sms.service';
+import { EmailService } from '@app/contracts/services/email.service';
+import { SmsService } from '@app/contracts/services/sms.service';
+import { MailingModule } from '@app/contracts/services/mailing.module';
+
 
 
 @Module({
-  imports:[MongooseModule.forFeature([{ name: Otp.name, schema: OtpSchema }]), IdentityModule],
+  imports:[MongooseModule.forFeature([{ name: Otp.name, schema: OtpSchema }]), IdentityModule, MailingModule],
   controllers: [OtpController],
   providers: [OtpService, EmailService, SmsService],
 })

@@ -3,12 +3,13 @@ import { PassportModule } from '@nestjs/passport';
 import { MongooseModule } from '@nestjs/mongoose';
 import { IdentityController } from './identity.controller';
 import { IdentityService } from './identity.service';
-import { EmailService } from '../services/Email.service';
-import { SmsService } from '../services/Sms.service';
 import { User, userSchema } from './entities/user.entity';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { LAND_NAME, LAND_QUEUE } from '@app/contracts/land/land.rmq';
 import { RedisCache } from '../cache/redis.cache.module';
+import { EmailService } from '@app/contracts/services/email.service';
+import { SmsService } from '@app/contracts/services/sms.service';
+import { MailingModule } from '@app/contracts/services/mailing.module';
 
 
 @Module({
@@ -24,7 +25,7 @@ import { RedisCache } from '../cache/redis.cache.module';
 
             transport: Transport.RMQ,
             options: {
-              urls: ['amqp://localhost:5672'],
+              urls: [ process.env.RABBITMQ_URL ?? 'amqp://localhost:5672'],
               queue: LAND_QUEUE,
               queueOptions: {
                 durable: false,
@@ -33,7 +34,8 @@ import { RedisCache } from '../cache/redis.cache.module';
           })
       },
     ]),
-    RedisCache
+    RedisCache,
+    MailingModule
    
   ],
   controllers: [IdentityController],
