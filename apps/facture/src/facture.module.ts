@@ -15,7 +15,7 @@ import { CustomerModule } from './customer/customer.module';
         name: FACTURE_NAME,
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://localhost:5672'],
+          urls: [process.env.RABBITMQ_URL ?? 'amqp://localhost:5672'],
           queue: FACTURE_QUEUE,
         },
       }
@@ -23,7 +23,7 @@ import { CustomerModule } from './customer/customer.module';
      
     
     FactureModule,
-    MongooseModule.forRoot('mongodb://localhost/facture'),
+    MongooseModule.forRoot(process.env.DATABASE_URL ?? 'mongodb://localhost/facture'),
     CustomerModule,
     ProductModule
   ],

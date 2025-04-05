@@ -2,7 +2,6 @@ import { Body, Controller, Get, HttpException, HttpStatus } from '@nestjs/common
 import { AccountService } from './account.service';
 import { Delete, HttpCode, Param, Post ,Put,Request, UseFilters, UseGuards} from '@nestjs/common/decorators';
 import { CreateUserDto } from './dto/create-account.dto';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { LoginDto } from './dto/login.dto';
 

@@ -14,7 +14,7 @@ import { LandService } from './land.service';
             name: LAND_NAME,
             transport: Transport.RMQ,
             options: {
-              urls: ['amqp://localhost:5672'],
+              urls: [process.env.RABBITMQ_URL ?? 'amqp://localhost:5672'],
               queue: LAND_QUEUE,
               queueOptions: {
                 durable: false

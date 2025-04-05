@@ -12,7 +12,7 @@ import { SENSORS_NAME, SENSORS_QUEUE } from '@app/contracts/sensor/sensors.rmq';
               name: SENSORS_NAME,
               transport: Transport.RMQ,
               options: {
-                urls: ['amqp://localhost:5672'],
+                urls: [process.env.RABBITMQ_URL ?? 'amqp://localhost:5672'],
                 queue: SENSORS_QUEUE,
                 queueOptions: {
                   durable: false

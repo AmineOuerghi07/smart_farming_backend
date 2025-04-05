@@ -6,8 +6,9 @@ import { Otp } from './entities/otp.entity';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { EmailService } from '../services/Email.service';
-import { SmsService } from '../services/Sms.service';
+import { EmailService } from '@app/contracts/services/email.service';
+import { SmsService } from '@app/contracts/services/sms.service';
+
 
 
 

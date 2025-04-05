@@ -14,10 +14,10 @@ import { CreateSensorDto } from '@app/contracts/land/dtos/sensor-dto/create-sens
 import { UpdateSensorDto } from '@app/contracts/land/dtos/sensor-dto/update-sensor.dto';
 import { SENSOR_PATTERNS } from '@app/contracts/land/sensor.patterns';
 import { CreatePlantDto } from '@app/contracts/land/dtos/plant-dto/create-plant.dto';
-import { UpdatePlantDto } from 'apps/land-service/src/plants/dto/update-plant.dto';
 import { PLANT_PATTERNS } from '@app/contracts/land/plant.patterns';
 import { AddPlantToRegionDto } from '@app/contracts/land/dtos/region-dto/add-plant-to-region.dto';
 import { AddSensorToRegionDto } from '@app/contracts/land/dtos/region-dto/add-sensor-to-region.dto';
+import { UpdatePlantDto } from '@app/contracts/land/dtos/plant-dto/update-plant.dto';
 
 @Injectable()
 export class LandService {
