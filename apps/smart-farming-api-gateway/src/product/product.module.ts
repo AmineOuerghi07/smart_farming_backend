@@ -11,7 +11,7 @@ import { PRODUCT_NAME, PRODUCT_QUEUE } from '@app/contracts/product/product.rmq'
         name: PRODUCT_NAME,
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://localhost:5672'],
+          urls: [process.env.RABBITMQ_URL ?? 'amqp://localhost:5672'],
           queue: PRODUCT_QUEUE,
           queueOptions: {
             durable: false

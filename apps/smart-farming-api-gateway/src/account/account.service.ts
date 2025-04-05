@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ClientProxy, ClientProxyFactory, Transport, MessagePattern } from '@nestjs/microservices';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ClientProxy } from '@nestjs/microservices';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AUTH_NAME } from '@app/contracts/auth/auth.rmq';

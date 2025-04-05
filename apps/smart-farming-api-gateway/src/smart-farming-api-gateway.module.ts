@@ -15,7 +15,6 @@ import { CustomMetricsMiddleware } from './middleware/custom-metrics-middleware'
 
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { PlantsModule } from 'apps/land-service/src/plants/plants.module';
 
 @Module({
   imports: [OrderModule,
