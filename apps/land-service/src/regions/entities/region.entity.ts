@@ -2,7 +2,6 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Land } from "../../lands/entities/land.entity";
 import { Sensor } from "../../sensors/entities/sensor.entity";
 import {  Types } from 'mongoose';
-import { Plant } from "../../plants/entities/plant.entity";
 
 @Schema()
 export class Region  {
@@ -23,5 +22,8 @@ export class Region  {
     default: [], // Critical: Ensures plants is always an array
   })
   plants: { plant: Types.ObjectId; quantity: number }[];
+
+  @Prop({ type: Boolean, default: false })
+  isConnected: boolean;
 }
 export const RegionSchema = SchemaFactory.createForClass(Region);

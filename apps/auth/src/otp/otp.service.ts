@@ -122,9 +122,14 @@ async resetPassword(req: ResetPasswordDto) {
   console.log('User before update:', { id: user.id, email: user.email, password: user.password });
   const hashedPassword = await bcrypt.hash(newPassword, 10);
   console.log('New hashed password:', hashedPassword);
-  await this.userService.updateUser(user.id.toString(), { password: hashedPassword });
-  const updatedUser = await this.userService.findOne(req.userId);
-  console.log('User after update:', { id: updatedUser.id, email: updatedUser.email, password: updatedUser.password });
-  return { message: 'Password reset successfully', userId: user.id };
+  try {
+    await this.userService.updateUser(user.id.toString(), { password: hashedPassword });
+    const updatedUser = await this.userService.findOne(req.userId);
+    console.log('User after update:', { id: updatedUser.id, email: updatedUser.email, password: updatedUser.password });
+    return { message: 'Password reset successfully', userId: user.id };
+  } catch (error) {
+    console.error('Error during password update:', error);
+    throw new HttpException('Failed to update password', HttpStatus.INTERNAL_SERVER_ERROR);
+  }
 }
 }

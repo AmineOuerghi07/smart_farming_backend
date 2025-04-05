@@ -9,6 +9,7 @@ import { Sensor, SensorSchema } from '../sensors/entities/sensor.entity';
 import { LandsModule } from '../lands/lands.module';
 import { UsersModule } from '../users/users.module';
 import { NOTIFICATION_NAME, NOTIFICATION_QUEUE } from '@app/contracts/notification/notification.rmq';
+import { LandService } from 'apps/smart-farming-api-gateway/src/land/land.service';
 
 @Module({
   imports: [

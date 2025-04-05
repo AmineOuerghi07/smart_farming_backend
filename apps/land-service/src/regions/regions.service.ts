@@ -8,6 +8,7 @@ import { Land } from '../lands/entities/land.entity';
 import { Sensor } from '../sensors/entities/sensor.entity';
 import { ClientProxy } from '@nestjs/microservices';
 import { NOTIFICATION_EVENTS } from '@app/contracts/notification/notification.events';
+import { LandsService } from '../lands/lands.service';
 
 @Injectable()
 export class RegionsService implements OnModuleInit {
@@ -18,6 +19,7 @@ export class RegionsService implements OnModuleInit {
     @InjectModel(Region.name) private regionModel: Model<Region>,
     @InjectModel(Land.name) private landModel: Model<Land>,
     @InjectModel(Sensor.name) private sensorModel: Model<Sensor>,
+    private readonly landsService: LandsService,
     @Inject('NOTIFICATION_SERVICE') private readonly notificationClient: ClientProxy
   ) {}
 
@@ -244,5 +246,30 @@ export class RegionsService implements OnModuleInit {
       this.logger.error(`Stack trace: ${error.stack}`);
       throw error;
     }
+  }
+  async findConnectedRegions(userId: string): Promise<Region[]> {
+    this.logger.log(`Fetching connected regions for user: ${userId}`);
+    
+    // Use LandsService to get user's lands
+    const lands = await this.landsService.findLandsByUserId(userId);
+    if (!lands.length) {
+      this.logger.log(`No lands found for user: ${userId}`);
+      return [];
+    }
+
+    const landIds = lands.map(land => land._id);
+    this.logger.log(`Found ${landIds.length} lands: ${landIds.join(', ')}`);
+
+    // Find connected regions for these lands
+    const connectedRegions = await this.regionModel
+      .find({
+        land: { $in: landIds },
+        isConnected: true,
+      })
+      .populate('land sensors')
+      .exec();
+
+    this.logger.log(`Found ${connectedRegions.length} connected regions`);
+    return connectedRegions;
   }
 }
