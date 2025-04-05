@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { User } from "apps/auth/src/identity/entities/user.entity";
 
 import { Types } from "mongoose";
+import { Customer } from "../../customer/schema/customerSchema";
 
 
 @Schema()
@@ -16,7 +16,7 @@ export class Facture  {
   totalAmount: number;
 
   @Prop({ required: true, type: 'ObjectId', ref: 'User' }) 
-   user: User;
+   user: Customer;
     
   
   

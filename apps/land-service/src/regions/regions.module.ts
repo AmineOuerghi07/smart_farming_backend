@@ -22,7 +22,7 @@ import { NOTIFICATION_NAME, NOTIFICATION_QUEUE } from '@app/contracts/notificati
         name: NOTIFICATION_NAME,
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://localhost:5672'],
+          urls: [ process.env.RABBITMQ_URL ?? 'amqp://localhost:5672'],
           queue: NOTIFICATION_QUEUE,
           queueOptions: {
             durable: false

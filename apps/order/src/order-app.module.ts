@@ -13,12 +13,12 @@ import { ORDER_NAME } from '@app/contracts/order/order.rmq';
         name: ORDER_NAME,
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://localhost:5672'],
+          urls: [ process.env.RABBITMQ_URL ??'amqp://localhost:5672'],
           queue: ORDER_NAME,
         },
       },
     ])
-    , MongooseModule.forRoot('mongodb://localhost/orders'), OrderModule, CustumerModule,
+    , MongooseModule.forRoot( process.env.DATABASE_URL ?? 'mongodb://localhost/orders'), OrderModule, CustumerModule,
    
 
       OrderModule,

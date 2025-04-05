@@ -14,10 +14,11 @@ import { CreateSensorDto } from '@app/contracts/land/dtos/sensor-dto/create-sens
 import { UpdateSensorDto } from '@app/contracts/land/dtos/sensor-dto/update-sensor.dto';
 import { SENSOR_PATTERNS } from '@app/contracts/land/sensor.patterns';
 import { CreatePlantDto } from '@app/contracts/land/dtos/plant-dto/create-plant.dto';
-import { UpdatePlantDto } from 'apps/land-service/src/plants/dto/update-plant.dto';
 import { PLANT_PATTERNS } from '@app/contracts/land/plant.patterns';
 import { AddPlantToRegionDto } from '@app/contracts/land/dtos/region-dto/add-plant-to-region.dto';
 import { AddSensorToRegionDto } from '@app/contracts/land/dtos/region-dto/add-sensor-to-region.dto';
+import { UpdatePlantDto } from '@app/contracts/land/dtos/plant-dto/update-plant.dto';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class LandService {
@@ -46,6 +47,29 @@ export class LandService {
 
   async findPlantsByLandId(id: string){
     return this.landClient.send<any , string>(LAND_PATTERNS.FIND_LAND_PLANTS,id).toPromise()
+  }
+  async setLandForRent(id: string, userId: string, rentPrice: number) {
+    const payload = { landId:id, userId, rentPrice };
+    return firstValueFrom(
+      this.landClient.send<{ _id: string; name: string; forRent: boolean; rentPrice: number }, typeof payload>(
+        LAND_PATTERNS.SET_LAND_FOR_RENT,
+        payload,
+      ),
+    );
+  }
+
+  async findLandsForRent() {
+    try {
+      return await firstValueFrom(
+        this.landClient.send<{ _id: string; name: string; forRent: boolean; rentPrice: number }[], {}>(
+          LAND_PATTERNS.FIND_LAND_FOR_RENT, // Verify this is 'get_lands_for_rent'
+          {},
+        ),
+      );
+    } catch (error) {
+      console.error(`Error in findLandsForRent: ${error.message}`);
+      throw error;
+    }
   }
   //-------------------------------------------------
   async createUser(createUserDto : CreateUserDto){
@@ -100,7 +124,9 @@ export class LandService {
     async createRegion(createRegionDto : CreateRegionDto){
         return this.landClient.send<any, CreateRegionDto>(REGION_PATTERNS.CREATE ,createRegionDto).toPromise()
       }
-
+      async findConnectedRegions(userId: string) {
+        return this.landClient.send<any, string>(REGION_PATTERNS.FIND_CONNECTED_REGIONS, userId).toPromise();
+      }
       async findRegionsByUserId(userId: string) {
         const lands = await this.findLandsByUserId(userId);
         if (!lands || lands.length === 0) {

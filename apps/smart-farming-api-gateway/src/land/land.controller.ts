@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UploadedFile, UseInterceptors, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, UploadedFile, UseInterceptors, NotFoundException, UseGuards } from '@nestjs/common';
 import { LandService } from './land.service';
 import { CreateLandDto } from '@app/contracts/land/dtos/land-dto/create-land.dto';
 import { UpdateLandDto } from '@app/contracts/land/dtos/land-dto/update-land.dto';
@@ -17,7 +17,8 @@ import { CreatePlantDto } from '@app/contracts/land/dtos/plant-dto/create-plant.
 import { UpdatePlantDto } from '@app/contracts/land/dtos/plant-dto/update-plant.dto';
 import { AddPlantToRegionDto } from '@app/contracts/land/dtos/region-dto/add-plant-to-region.dto';
 import { AddSensorToRegionDto } from '@app/contracts/land/dtos/region-dto/add-sensor-to-region.dto';
-import { Region } from 'apps/land-service/src/regions/entities/region.entity';
+
+
 
 const landAssetsPath = join(__dirname, '..', '..', 'assets', 'lands');
 export const getUploadPath = (subdirectory: string) => {
@@ -122,7 +123,20 @@ export class LandController {
     return this.landService.findPlantsByLandId(id);
   }
 
+  @Put('land/set-for-rent/:id')
+ // @UseGuards(AuthGuard('jwt')) // Secure the endpoint
+  async setLandForRent(
+    @Param('id') id: string,
+    @Body('userId') userId: string, // In practice, get this from auth token
+    @Body('rentPrice') rentPrice: number,
+  ) {
+    return this.landService.setLandForRent(id, userId, rentPrice);
+  }
 
+  @Get('land/check/forRent')
+  async findLandsForRent() {
+    return this.landService.findLandsForRent();
+  }
   @Get('users/:id')
   async findLandsByUserId(@Param('id') id: string) {
     return this.landService.findLandsByUserId(id);
@@ -250,6 +264,10 @@ async deletePlant(@Param('id') id: string)
   @Get('/region/:id')
  async findOneRegion(@Param('id')id :string){
         return this.landService.findOneRegion(id)
+  }
+  @Get('/region/connectedRegions/:userId')
+  async findConnectedRegions(@Param('userId') userId: string) {
+    return this.landService.findConnectedRegions(userId);
   }
   @Put('/region/:id')
  async updateRegion(@Param('id') id: string, @Body() updateRegionDto: UpdateRegionDto)
