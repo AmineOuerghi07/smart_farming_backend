@@ -11,6 +11,7 @@ import { EmailService } from '../services/Email.service';
 import { SmsService } from '../services/Sms.service'; 
 import { User } from './entities/user.entity';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
+import { OAuth2Client } from 'google-auth-library';
 
 import { LAND_NAME } from '@app/contracts/land/land.rmq';
 import { USER_PATTERNS } from '@app/contracts/land/user.patterns';
@@ -28,6 +29,12 @@ export class IdentityService {
     @Inject(LAND_NAME)private landClient : ClientProxy,
     private cacheService : RedisService
   ) {}
+  
+    // Define CLIENT_ID as a static readonly constant
+    static readonly CLIENT_ID = '658552563772-98rrs329hqrinquc5e0sfpv8oahnq3ds.apps.googleusercontent.com';
+
+    // Define client as a static readonly property
+    static readonly client = new OAuth2Client(IdentityService.CLIENT_ID);
 
   // Register method
   async register(createUserDto: CreateUserDto) {

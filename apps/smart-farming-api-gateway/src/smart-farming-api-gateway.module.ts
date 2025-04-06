@@ -16,6 +16,8 @@ import { CustomMetricsMiddleware } from './middleware/custom-metrics-middleware'
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { PlantsModule } from 'apps/land-service/src/plants/plants.module';
+import { WeatherModule } from 'apps/auth/Weather/weather.module';
+import { CropModule } from 'apps/auth/Weather/crop.modue';
 
 @Module({
   imports: [OrderModule,
@@ -33,6 +35,7 @@ import { PlantsModule } from 'apps/land-service/src/plants/plants.module';
         LandModule,
          SensorsModule,
           AccountModule,
+          WeatherModule,CropModule,
             PrometheusModule.register({
       path: '/metrics',
     }),],
