@@ -15,12 +15,16 @@ import { CustomMetricsMiddleware } from './middleware/custom-metrics-middleware'
 
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { WeatherModule } from './weather/weather.module';
+import { CropModule } from './weather/crop.modue';
 
 @Module({
   imports: [OrderModule,
      InventoryModule,
       ProductModule,
        FactureModule,
+       CropModule,
+       WeatherModule,
        ServeStaticModule.forRoot({
         rootPath: join(process.cwd(), 'assets'), 
         serveRoot: '/uploads',

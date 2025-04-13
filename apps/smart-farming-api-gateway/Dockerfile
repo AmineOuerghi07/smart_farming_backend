@@ -20,7 +20,12 @@ RUN --mount=type=bind,source=./package.json,target=/usr/src/app/package.json \
 COPY --chown==node:node ./tsconfig.json ./nest-cli.json ./tsconfig.build.json /usr/src/app/
 COPY --chown==node:node ./apps/smart-farming-api-gateway /usr/src/app/apps/smart-farming-api-gateway
 
-COPY --chown==node:node ./assets /usr/src/app/assets
+RUN mkdir -p /usr/src/app/assets/lands \
+    && mkdir -p /usr/src/app/assets/products \
+    && mkdir -p /usr/src/app/assets/plants \
+    && mkdir -p /usr/src/app/assets/users \
+    && chmod -R 775 /usr/src/app/assets
+    
 CMD npm start smart-farming-api-gateway --watch
 
 FROM base AS prod
@@ -28,5 +33,10 @@ RUN --mount=type=bind,source=../../package.json,target=package.json \
     --mount=type=bind,source=../../package-lock.json,target=package-lock.json \
     --mount=type=cache,target=/root/.npm \
     npm ci --omit=dev
+RUN mkdir -p /usr/src/app/assets/lands \
+    && mkdir -p /usr/src/app/assets/products \
+    && mkdir -p /usr/src/app/assets/plants \
+    && mkdir -p /usr/src/app/assets/users \
+    && chmod -R 775 /usr/src/app/assets
 COPY . .
 CMD node src/index.js
