@@ -42,25 +42,37 @@ export class IdentityService {
     if (existingUser) {
       throw new RpcException('Email already in use');
     }
-    try
-    {
+    try {
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
+      const { confirmpassword, ...userData } = createUserDto;
 
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
-    const { confirmpassword, ...userData } = createUserDto;
+      // Créer un nouvel utilisateur avec toutes les données
+      const newUser = new this.userModel({
+        ...userData,
+        password: hashedPassword,
+        image: userData.image || null
+      });
 
-    const newUser = new this.userModel({
-      ...userData,
-      password: hashedPassword,
-    });
+      const savedUser = await newUser.save();
+      
+      // Émettre l'événement avec toutes les données nécessaires
+      this.landClient.emit(USER_PATTERNS.CREATE, {
+        _id: savedUser.id,
+        name: savedUser.fullname,
+        email: savedUser.email,
+        phone: savedUser.phonenumber,
+        image: savedUser.image
+      });
 
-    const savedUser = await newUser.save();
-    this.landClient.emit(USER_PATTERNS.CREATE, {_id : savedUser.id ,name : savedUser.fullname, email: savedUser.email, phone : savedUser.phonenumber})
-    return { message: 'User registered successfully', user: savedUser };
-  }catch(e)
-  {
-    throw new RpcException("Operation Failed")
-  }
+      return { 
+        message: 'User registered successfully', 
+        user: savedUser 
+      };
+    } catch(e) {
+      console.error('Registration error:', e);
+      throw new RpcException("Operation Failed");
+    }
   }
 
   // Login method

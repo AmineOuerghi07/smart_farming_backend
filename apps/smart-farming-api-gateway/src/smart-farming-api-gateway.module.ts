@@ -24,6 +24,7 @@ import { CropModule } from 'apps/auth/Weather/crop.modue';
      InventoryModule,
       ProductModule,
        FactureModule,
+      
        ServeStaticModule.forRoot({
         rootPath: join(process.cwd(), 'assets'), 
         serveRoot: '/uploads',

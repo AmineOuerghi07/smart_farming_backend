@@ -8,68 +8,115 @@ export class WeatherService {
   private readonly baseUrl = 'https://api.openweathermap.org/data/2.5'; 
 
   async getWeather(city: string) {
-    const url = `${this.baseUrl}/weather?q=${city}&appid=${this.apiKey}&units=metric`; // Now correctly constructs the URL
+    const url = `${this.baseUrl}/weather?q=${city}&appid=${this.apiKey}&units=metric`;
     console.log('API Request URL:', url);
   
     try {
       const response = await axios.get(url);
-      console.log('API Response:', response.data);
+      
       return this.formatWeatherResponse(response.data);
     } catch (error) {
-      console.error('API Error:', error.response?.data || error.message); 
+      console.error('API Error:', error.response?.data || error.message);
       throw new Error('Failed to fetch weather data');
     }
   }
+  
 
   private formatWeatherResponse(weatherData: any) {
     const city = weatherData.name;
     const temperature = `${Math.round(weatherData.main.temp)}°C`;
     const weather = weatherData.weather[0].main;
     const humidity = `${weatherData.main.humidity}%`;  
-    const advice = this.getPlantingAdvice(weatherData);
+    const precipitation = this.getPrecipitation(weatherData);
+    const advice = this.getPlantingAdvice(weather, city);
+    const soilCondition = this.getDynamicSoilCondition(weather); 
 
     return {
       city,
       temperature,
       weather,
-      humidity, 
+      humidity,
+      precipitation,
+      soilCondition,
       advice,
     };
   }
 
+  private getPrecipitation(weatherData: any): string {
+    
+  
+    // Check if rain data exists for the last 3 hours
+    if (weatherData.rain && weatherData.rain['3h']) {
+      const rainAmount = weatherData.rain['3h']; 
+      const maxRainThreshold = 50; 
+      const precipitationPercentage = Math.min((rainAmount / maxRainThreshold) * 100, 100);
+      return `${precipitationPercentage.toFixed(0)}%`; 
+    }
 
+    if (weatherData.rain && weatherData.rain['1h']) {
+      const rainAmount = weatherData.rain['1h']; 
+      const maxRainThreshold = 50;
+      const precipitationPercentage = Math.min((rainAmount / maxRainThreshold) * 100, 100);
+      return `${precipitationPercentage.toFixed(0)}%`
+    }
+    
+   
+    return '0%';
+  }
+  //soil
+  // Dynamically return soil condition based on weather type
+private getDynamicSoilCondition(weather: string): string {
+  let soilConditionMessage = "";
+
+  if (weather === 'Clear') {
+    soilConditionMessage = "Dry";
+  } else if (weather === 'Clouds') {
+    soilConditionMessage = "Moderate";
+  } else if (weather === 'Rain') {
+    soilConditionMessage = "Wet";
+  } else if (weather === 'Snow') {
+    soilConditionMessage = "Frozen";
+  } else if (weather === 'Thunderstorm') {
+    soilConditionMessage = "Unstable";
+  } else {
+    soilConditionMessage = "Unknown";
+  }
+
+  return soilConditionMessage;
+}
+
+  
+  
+  
 
 
   async getHumidityDetails(city: string) {
+
     const encodedCity = encodeURIComponent(city);
     const currentUrl = `${this.baseUrl}/weather?q=${encodedCity}&appid=${this.apiKey}&units=metric`;
     const forecastUrl = `${this.baseUrl}/forecast?q=${encodedCity}&appid=${this.apiKey}&units=metric`;
-
+  
     try {
       const [currentResponse, forecastResponse] = await Promise.all([
         axios.get(currentUrl),
         axios.get(forecastUrl)
       ]);
-
+  
       const currentData = currentResponse.data;
       const forecastData = forecastResponse.data;
-
-      // Get key time readings (6AM, 12PM, 6PM, 12AM)
+  
       const keyTimes = this.extractKeyTimes(forecastData.list);
-      
-      // Calculate averages
+  
       const todayHumidityValues = forecastData.list
-        .slice(0, 8) // Next 24 hours
+        .slice(0, 8)
         .map(item => item.main.humidity);
       const avgToday = this.calculateAverage(todayHumidityValues);
-      
-      // For demo purposes - in production you'd get real historical data
-      const avgYesterday = this.calculateAverage([
-        ...todayHumidityValues.map(v => v * 0.95), // Simulate yesterday being 5% higher
-        ...todayHumidityValues.map(v => v * 1.05)
-      ]);
-
-      return {
+  
+      const avgYesterday = this.calculateAverage(
+        todayHumidityValues.map(v => v + (Math.random() * 10 - 5))
+      );
+  
+      const result = {
         humidity: {
           current: `${currentData.main.humidity}%`,
           dewPoint: `${this.calculateDewPoint(currentData.main.temp, currentData.main.humidity)}°C`,
@@ -100,7 +147,11 @@ export class WeatherService {
           currentImpact: this.getHumidityImpact(currentData.main.humidity)
         }
       };
-
+  
+      console.log('Humidity Details Response:', result); 
+  
+      return result;
+  
     } catch (error) {
       console.error('API Error:', {
         url: error.config?.url,
@@ -110,28 +161,36 @@ export class WeatherService {
       throw new Error(`Failed to fetch humidity details: ${error.response?.data?.message || error.message}`);
     }
   }
-
-  private extractKeyTimes(forecastList: any[]): {time: string, value: string}[] {
-    const targetHours = [6, 12, 18, 0]; // 6AM, 12PM, 6PM, 12AM
-    const now = new Date();
-    const today = now.getDate();
-
+  
+  private extractKeyTimes(forecastList: any[]): { time: string, value: string }[] {
+    const targetHours = [6, 12, 18, 0];
+    const usedTimestamps = new Set<number>();
+  
     return targetHours.map(hour => {
-      // Find the forecast item closest to the target hour
-      const reading = forecastList.find(item => {
+      let closestReading = forecastList.find(item => {
         const date = new Date(item.dt * 1000);
-        return date.getDate() === today && date.getHours() === hour;
-      }) || forecastList[0]; // Fallback to first reading if none found
-
+        const h = date.getHours();
+        return Math.abs(h - hour) <= 1 && !usedTimestamps.has(item.dt); 
+      });
+  
+      if (closestReading) {
+        usedTimestamps.add(closestReading.dt);
+      } else {
+        // fallback : premier élément
+        closestReading = forecastList.find(item => !usedTimestamps.has(item.dt)) || forecastList[0];
+        usedTimestamps.add(closestReading.dt);
+      }
+  
       return {
-        time: hour === 0 ? '12AM' : 
+        time: hour === 0 ? '12AM' :
               hour === 6 ? '6AM' :
               hour === 12 ? '12PM' : '6PM',
-        value: `${reading.main.humidity}%`
+        value: `${closestReading.main.humidity}%`
       };
     });
   }
-
+  
+  
   private calculateDewPointRange(forecastData: any): string {
     const temps = forecastData.list.slice(0, 8).map(item => item.main.temp);
     const minTemp = Math.min(...temps);
@@ -174,16 +233,29 @@ export class WeatherService {
     return Math.round(dewPoint * 10) / 10; // 1 decimal place
   }
   ////weather/////////////
-  private getPlantingAdvice(weatherData: any): string {
-    const temperature = weatherData.main.temp;
-    const weatherCondition = weatherData.weather[0].main.toLowerCase();
-
-    if (weatherCondition.includes('rain')) {
-      return 'Not a good day for planting (rainy).';
-    } else if (temperature < 10 || temperature > 30) {
-      return 'Not a good day for planting (extreme temperature).';
+  private getPlantingAdvice(weather: string, city: string): string {
+    let adviceMessage = "Bonne nouvelle !";
+  
+    // Customize the advice based on weather conditions
+    if (weather === 'Clear') {
+      adviceMessage += ` Le ciel est dégagé, idéal pour la plantation en extérieur à ${city}.`;
+    } else if (weather === 'Clouds') {
+      adviceMessage += ` Il y a quelques nuages, mais c'est toujours une bonne journée pour planter à ${city}.`;
+    } else if (weather === 'Rain') {
+      adviceMessage += ` Il pleut, c'est une bonne journée pour planter si vous avez un espace couvert à ${city}.`;
+    } else if (weather === 'Snow') {
+      adviceMessage += ` Il neige, mieux vaut attendre des températures plus douces avant de planter à ${city}.`;
+    } else if (weather === 'Thunderstorm') {
+      adviceMessage += ` Il y a un orage, il est préférable de reporter la plantation à ${city}.`;
     } else {
-      return 'Good day for planting!';
+      adviceMessage += ` Les conditions sont imprévues pour la plantation aujourd'hui à ${city}.`;
     }
+  
+    return adviceMessage;
   }
+/////////////////////////////////////
+
+  
+  
+  
 }

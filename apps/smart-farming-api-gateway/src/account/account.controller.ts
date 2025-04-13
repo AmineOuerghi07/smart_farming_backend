@@ -1,10 +1,14 @@
 import { Body, Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
 import { AccountService } from './account.service';
-import { Delete, HttpCode, Param, Post ,Put,Request, UseFilters, UseGuards} from '@nestjs/common/decorators';
+import { Delete, HttpCode, Param, Post ,Put,Request, UploadedFile, UseFilters, UseGuards, UseInterceptors} from '@nestjs/common/decorators';
 import { CreateUserDto } from './dto/create-account.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { LoginDto } from './dto/login.dto';
+import { diskStorage } from 'multer';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { getUploadPath } from '../product/product.controller';
+import { UpdateUserDto } from './dto/update-account.dto';
 
 
 @Controller('account')
@@ -16,9 +20,31 @@ export class AccountController {
     return this.accountService.hello();
   }
   @Post('sign-up')
-  async register(@Body() req : CreateUserDto) {
-      return this.accountService.register(req);
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: getUploadPath('users'), // Specify the directory where the files should be uploaded
+      filename: (req, file, callback) => {
+        const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const ext = file.originalname.split('.').pop();
+        const filename = `user-${uniqueName}.${ext}`;
+        callback(null, filename);
+      },
+    }),
+  }))
+  async register(@Body() req: CreateUserDto, @UploadedFile() file: Express.Multer.File) {
+    try {
+      // Handle file upload and add image URL if file exists
+      if (file) {
+        req.image = `users/${file.filename}`; // Adjust according to where your file is stored
+      }
+
+      // Send the registration data to the microservice
+      return await this.accountService.register(req);
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw new Error(`Error during registration: ${error.message}`);
     }
+  }
 
     
   @Post('sign-in')
@@ -43,18 +69,45 @@ export class AccountController {
  }
 
 
-  @Put('update/:id')
-  async updateUser(@Param('id') id: string, @Body() updateData) {
-    try
-    {
-      return await this.accountService.updateUser(id, updateData);
+ @Put('update/:id')
+ @UseInterceptors(FileInterceptor('file', {
+   storage: diskStorage({
+     destination: getUploadPath('users'),
+     filename: (req, file, callback) => {
+       const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
+       const ext = file.originalname.split('.').pop();
+       const filename = `user-${uniqueName}.${ext}`;
+       callback(null, filename);
+     },
+   }),
+ }))
+ async updateUser(
+  @Param('id') id: string,
+  @UploadedFile() file: Express.Multer.File,
+  @Body() updateData: UpdateUserDto,
+) {
+  try {
+    if (file) {
+      const imageUrl = `users/${file.filename}`;
+      updateData.image = imageUrl;
     }
-    catch(e)
-    {
-      throw new HttpException(`Updating User with id: ${id} failed`, HttpStatus.BAD_REQUEST)
+
+    // Trim email to remove any whitespace/newlines
+    if (updateData.email) {
+      updateData.email = updateData.email.trim();
     }
-    
+
+    console.log('Updating user with data:', updateData);
+
+    return await this.accountService.updateUser(id, updateData);
+  } catch (e) {
+    console.error('Full error:', e); // Log complete error
+    throw new HttpException(
+      `Updating User failed: ${e.message || 'Unknown error'}`,
+      HttpStatus.BAD_REQUEST
+    );
   }
+}
 
   @Delete('remove/:id')
   async deleteUser(@Param('id') id: string) {
