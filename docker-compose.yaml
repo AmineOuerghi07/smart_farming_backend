@@ -1,0 +1,221 @@
+services:
+  auth:
+    image: authservice:1.0
+    container_name: authService
+    build: 
+      context: ./
+      dockerfile: ./apps/auth/Dockerfile
+      target: dev
+    init: true
+    depends_on:
+      - mongo
+      - redis
+      - rabbitmq
+    environment:
+      - DATABASE_URL=mongodb://mongo:27017/farm
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    networks:
+      - smart-farming-backend
+    restart: unless-stopped
+
+  facture:
+    image: factureservice:1.0
+    container_name: factureService
+    build: 
+      context: ./
+      dockerfile: ./apps/facture/Dockerfile
+      target: dev
+    init: true
+    depends_on:
+      - mongo
+      - redis
+      - rabbitmq
+    environment:
+      - DATABASE_URL=mongodb://mongo:27017/facture
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    networks:
+      - smart-farming-backend
+    restart: unless-stopped
+
+  land-service:
+    image: landservice:1.0
+    container_name: landService
+    build: 
+      context: ./
+      dockerfile: ./apps/land-service/Dockerfile
+      target: dev
+    init: true
+    depends_on:
+      - mongo
+      - redis
+      - rabbitmq
+    environment:
+      - DATABASE_URL=mongodb://mongo:27017/land-service
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    networks:
+      - smart-farming-backend
+    restart: unless-stopped
+  
+  order:
+    image: orderservice:1.0
+    container_name: orderService
+    build: 
+      context: ./
+      dockerfile: ./apps/order/Dockerfile
+      target: dev
+    init: true
+    depends_on:
+      - mongo
+      - redis
+      - rabbitmq
+    environment:
+      - DATABASE_URL=mongodb://mongo:27017/order
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    networks:
+      - smart-farming-backend
+    restart: unless-stopped
+  
+  product:
+    image: productservice:1.0
+    container_name: productService
+    build: 
+      context: ./
+      dockerfile: ./apps/product/Dockerfile
+      target: dev
+    init: true
+    depends_on:
+      - mongo
+      - redis
+      - rabbitmq
+    environment:
+      - DATABASE_URL=mongodb://mongo:27017/product
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    networks:
+      - smart-farming-backend
+    restart: unless-stopped
+  
+  sensor-service:
+    image: sensorservice:1.0
+    container_name: sensorService
+    build: 
+      context: ./
+      dockerfile: ./apps/sensor-service/Dockerfile
+      target: dev
+    init: true
+    depends_on:
+      - mongo
+      - redis
+      - rabbitmq
+    environment:
+      - DATABASE_URL=mongodb://mongo:27017/sensor-service
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    networks:
+      - smart-farming-backend
+    restart: unless-stopped
+  
+  smart-farming-api-gateway:
+    image: smartfarmingapigateway:1.0
+    container_name: smartFarmingApiGateway
+    ports:
+      - "3000:3000"
+    build: 
+      context: ./
+      dockerfile: ./apps/smart-farming-api-gateway/Dockerfile
+      target: dev
+    init: true
+    depends_on:
+      - auth
+      - facture
+      - land-service
+      - order
+      - product
+      - sensor-service
+      - rabbitmq
+      - redis
+      - prometheus
+    environment:
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    networks:
+      - smart-farming-backend
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3.8-management
+    container_name: rabbitmq
+    ports:
+      - "15692:15692"
+      - "5672:5672"
+    networks:
+      - smart-farming-backend
+    restart: always
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq  
+
+
+  
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - smart-farming-backend
+    volumes:
+      - ./utils/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.listen-address=:9090'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+  
+  grafana:
+    image: grafana/grafana:11.6.0
+    container_name: grafana
+    ports:
+      - "3306:3306"
+    networks:
+      - smart-farming-backend
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_HTTP_PORT=3306
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+
+  redis:
+    image: redis:6.0.9
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - smart-farming-backend
+    restart: unless-stopped
+    volumes: 
+      - cache:/data
+  mongo:
+    image: mongo:4.0.28-xenial
+    container_name: mongo
+    ports: 
+      - "27017:27017"
+    networks:
+      - smart-farming-backend
+    volumes:
+      - mongo-data:/data/db
+networks:
+  smart-farming-backend:
+    driver: bridge
+volumes:
+  mongo-data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  cache:
+    driver: local
+  grafana-storage:
+    driver: local
+  

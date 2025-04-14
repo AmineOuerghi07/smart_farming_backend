@@ -5,10 +5,8 @@ import { CreateUserDto } from './dto/create.user.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { ResetPasswordDto } from './dto/reset-password.dto';
 
-import { EmailService } from '../services/Email.service'; 
-import { SmsService } from '../services/Sms.service'; 
+
 import { User } from './entities/user.entity';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { OAuth2Client } from 'google-auth-library';
@@ -18,6 +16,8 @@ import { USER_PATTERNS } from '@app/contracts/land/user.patterns';
 import { UpdateUserDto } from './dto/update.user.dto';
 import { lastValueFrom } from 'rxjs';
 import { RedisService } from '../cache/redis.cache.service';
+import { EmailService } from '@app/contracts/services/email.service';
+import { SmsService } from '@app/contracts/services/sms.service';
 
 @Injectable()
 export class IdentityService {

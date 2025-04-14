@@ -1,11 +1,10 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Land } from "../../lands/entities/land.entity";
 import { Sensor } from "../../sensors/entities/sensor.entity";
-import { Document, Types } from 'mongoose';
-import { Plant } from "../../plants/entities/plant.entity";
+import {  Types } from 'mongoose';
 
 @Schema()
-export class Region extends Document {
+export class Region  {
   @Prop({ required: true })
   name: string;
   @Prop()
@@ -23,5 +22,8 @@ export class Region extends Document {
     default: [], // Critical: Ensures plants is always an array
   })
   plants: { plant: Types.ObjectId; quantity: number }[];
+
+  @Prop({ type: Boolean, default: false })
+  isConnected: boolean;
 }
 export const RegionSchema = SchemaFactory.createForClass(Region);

@@ -13,7 +13,7 @@ import { PlantsModule } from './plants/plants.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://127.0.0.1:27017/land-service', {
+    MongooseModule.forRoot(process.env.DATABASE_URL ?? 'mongodb://127.0.0.1:27017/land-service', {
       connectionFactory: (connection) => {
         connection.on('connected', () => {
           console.log('MongoDB connected successfully');
@@ -29,7 +29,7 @@ import { PlantsModule } from './plants/plants.module';
         name: NOTIFICATION_NAME,
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://localhost:5672'],
+          urls: [ process.env.RABBITMQ_URL ??'amqp://localhost:5672'],
           queue: NOTIFICATION_QUEUE,
           queueOptions: {
             durable: false

@@ -5,7 +5,7 @@ import { Region } from '../../regions/entities/region.entity';
 
 
 @Schema()
-export class Land {
+export class Land extends Document {
   @Prop({ required: true })
   name: string;
 
@@ -14,7 +14,8 @@ export class Land {
   
   @Prop({ required: true, default: false })
   forRent: boolean;
-
+  @Prop({ required: false, default: 0 }) // New field for rental price
+  rentPrice: number;
   @Prop({ required: true })
   surface: number;
 

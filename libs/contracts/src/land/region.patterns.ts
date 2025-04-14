@@ -7,5 +7,6 @@ export const REGION_PATTERNS =
     REMOVE : 'region.remove',
     REGION_ADD_PLANT:'region.addPlant',
     REGION_ADD_SENSOR: 'region.addSensor',
-    FIND_BY_LAND_IDS: 'region.findByLandIds'
+    FIND_BY_LAND_IDS: 'region.findByLandIds',
+    FIND_CONNECTED_REGIONS: 'region.findConnectedRegions',
 }

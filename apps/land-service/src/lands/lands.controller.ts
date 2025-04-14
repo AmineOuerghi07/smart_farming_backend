@@ -43,4 +43,13 @@ export class LandsController {
   async findLandsByUserId(userId: string) {
       return this.landsService.findLandsByUserId(userId);
   }
+  @MessagePattern(LAND_PATTERNS.SET_LAND_FOR_RENT)
+  async setLandForRent(@Payload() data: { landId: string; userId: string;rentPrice: number }) {
+    return this.landsService.setLandForRent(data.landId, data.userId, data.rentPrice);
+  }
+
+  @MessagePattern(LAND_PATTERNS.FIND_LAND_FOR_RENT)
+  async findLandForRent()  {
+    return this.landsService.findLandsForRent();
+  }
 }
