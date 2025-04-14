@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: product-configmap
+data:
+  DATABASE_URL: "mongodb://mongodb-service:27017/product"
+  RABBITMQ_URL: "amqp://rabbitmq:5672"
