@@ -38,4 +38,10 @@ export class UpdateUserDto {
   @Type(() => Date)
   @IsDate()
   otpExpires?: Date | null;
+
+  @IsOptional()
+  @IsString()
+  image?: string;
+
 }
+
