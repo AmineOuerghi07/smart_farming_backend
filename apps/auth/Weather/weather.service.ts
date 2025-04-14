@@ -29,7 +29,7 @@ export class WeatherService {
     const humidity = `${weatherData.main.humidity}%`;  
     const precipitation = this.getPrecipitation(weatherData);
     const advice = this.getPlantingAdvice(weather, city);
-    const soilCondition = this.getDynamicSoilCondition(weather); 
+    const soilCondition = this.getDynamicSoilCondition(weather,city); 
 
     return {
       city,
@@ -65,7 +65,7 @@ export class WeatherService {
   }
   //soil
   // Dynamically return soil condition based on weather type
-private getDynamicSoilCondition(weather: string): string {
+private getDynamicSoilCondition(weather: string, city: string): string {
   let soilConditionMessage = "";
 
   if (weather === 'Clear') {
