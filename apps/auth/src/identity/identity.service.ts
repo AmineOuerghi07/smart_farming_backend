@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 
 import { User } from './entities/user.entity';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
+import { OAuth2Client } from 'google-auth-library';
 
 import { LAND_NAME } from '@app/contracts/land/land.rmq';
 import { USER_PATTERNS } from '@app/contracts/land/user.patterns';
@@ -28,6 +29,12 @@ export class IdentityService {
     @Inject(LAND_NAME)private landClient : ClientProxy,
     private cacheService : RedisService
   ) {}
+  
+    // Define CLIENT_ID as a static readonly constant
+    static readonly CLIENT_ID = '658552563772-98rrs329hqrinquc5e0sfpv8oahnq3ds.apps.googleusercontent.com';
+
+    // Define client as a static readonly property
+    static readonly client = new OAuth2Client(IdentityService.CLIENT_ID);
 
   // Register method
   async register(createUserDto: CreateUserDto) {
@@ -35,25 +42,37 @@ export class IdentityService {
     if (existingUser) {
       throw new RpcException('Email already in use');
     }
-    try
-    {
+    try {
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
+      const { confirmpassword, ...userData } = createUserDto;
 
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
-    const { confirmpassword, ...userData } = createUserDto;
+      // Créer un nouvel utilisateur avec toutes les données
+      const newUser = new this.userModel({
+        ...userData,
+        password: hashedPassword,
+        image: userData.image || null
+      });
 
-    const newUser = new this.userModel({
-      ...userData,
-      password: hashedPassword,
-    });
+      const savedUser = await newUser.save();
+      
+      // Émettre l'événement avec toutes les données nécessaires
+      this.landClient.emit(USER_PATTERNS.CREATE, {
+        _id: savedUser.id,
+        name: savedUser.fullname,
+        email: savedUser.email,
+        phone: savedUser.phonenumber,
+        image: savedUser.image
+      });
 
-    const savedUser = await newUser.save();
-    this.landClient.emit(USER_PATTERNS.CREATE, {_id : savedUser.id ,name : savedUser.fullname, email: savedUser.email, phone : savedUser.phonenumber})
-    return { message: 'User registered successfully', user: savedUser };
-  }catch(e)
-  {
-    throw new RpcException("Operation Failed")
-  }
+      return { 
+        message: 'User registered successfully', 
+        user: savedUser 
+      };
+    } catch(e) {
+      console.error('Registration error:', e);
+      throw new RpcException("Operation Failed");
+    }
   }
 
   // Login method
