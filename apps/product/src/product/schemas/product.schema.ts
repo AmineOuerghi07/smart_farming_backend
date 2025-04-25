@@ -11,7 +11,7 @@ export class Product {
 
     @Prop({ required: false })
     description: string;
-   
+
     @Prop({ required: true })
     price: number;
     @Prop({ required: true })
@@ -22,6 +22,8 @@ export class Product {
     updatedAt: Date;
     @Prop()
     image?: string;
+    @Prop({ required: false })
+    rating?: { user_id: string, rating: number }[]
 
 }
 export const ProductSchema = SchemaFactory.createForClass(Product);

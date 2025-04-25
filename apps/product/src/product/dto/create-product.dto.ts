@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsNumber, IsString, Min } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsNumber, IsString, Min, IsArray } from 'class-validator';
 
 export class CreateProductDto {
   @IsString()
@@ -23,12 +23,14 @@ export class CreateProductDto {
   @Min(0)
   quantity?: number;
 
-
-
   @IsNumber()
   @Min(0)
   stockQuantity: number;
   @IsString()
   @IsOptional()
   image?: string;
+
+  @IsArray()
+  @IsOptional()
+  rating?: { user_id: string, rating: number }[]
 }
