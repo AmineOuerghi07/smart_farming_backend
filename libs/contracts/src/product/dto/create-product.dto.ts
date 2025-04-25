@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsNumber, IsString, Min } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsNumber, IsString, Min, IsArray } from 'class-validator';
 
 export class CreateProductDto {
   @IsString()
@@ -29,4 +29,8 @@ export class CreateProductDto {
   @IsString()
   @IsOptional()
   image?: string; // Added to store the file path
+
+  @IsArray()
+  @IsOptional()
+  rating?: { user_id: string, rating: number }[]
 }
