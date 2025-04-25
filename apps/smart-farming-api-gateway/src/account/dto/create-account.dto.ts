@@ -23,4 +23,6 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   address: string;
+  @IsString()
+  image?: string;
 }

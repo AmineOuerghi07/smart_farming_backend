@@ -30,6 +30,9 @@ export class User {
 
     @Prop()
     isVerified: boolean
+    @Prop()
+    image?: string
+
 }
 
 export const userSchema = SchemaFactory.createForClass(User)
