@@ -20,6 +20,8 @@ import { AddSensorToRegionDto } from '@app/contracts/land/dtos/region-dto/add-se
 import { UpdatePlantDto } from '@app/contracts/land/dtos/plant-dto/update-plant.dto';
 import { firstValueFrom } from 'rxjs';
 
+type AddActivityDto = { regionId: string; description: string };
+
 @Injectable()
 export class LandService {
   constructor(@Inject(LAND_NAME) private landClient: ClientProxy) {}
@@ -173,6 +175,12 @@ export class LandService {
       async findAllRegion() {
         return this.landClient.send(REGION_PATTERNS.FIND_ALL, {}).toPromise();
       }
+      async addActivity(regionId: string, description: string) {
+        return this.landClient.send<any, { regionId: string; description: string }>(
+          REGION_PATTERNS.ADD_ACTIVITY,
+          { regionId, description }
+        ).toPromise();
+      }
        //-------------------------------------------------
        async createSensor(createSensorDto : CreateSensorDto){
         return this.landClient.send(SENSOR_PATTERNS.CREATE ,createSensorDto).toPromise()
@@ -192,4 +200,13 @@ export class LandService {
       async findAllSensor() {
         return this.landClient.send(SENSOR_PATTERNS.FIND_ALL, {}).toPromise();
       }
+
+ 
+
+  async setActivityDone(regionId: string, activityId: string, done: boolean) {
+    return this.landClient.send<any, { regionId: string; activityId: string; done: boolean }>(
+      REGION_PATTERNS.SET_ACTIVITY_DONE,
+      { regionId, activityId, done }
+    ).toPromise();
+  }
 }

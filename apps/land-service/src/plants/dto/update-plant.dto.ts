@@ -3,4 +3,5 @@ import { CreatePlantDto } from './create-plant.dto';
 
 export class UpdatePlantDto extends PartialType(CreatePlantDto) {
   id: string;
+  plantingYear?: number;
 }

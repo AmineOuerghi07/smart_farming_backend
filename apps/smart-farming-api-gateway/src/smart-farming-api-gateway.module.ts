@@ -36,6 +36,7 @@ import { CropModule } from 'apps/auth/Weather/crop.modue';
          SensorsModule,
           AccountModule,
           WeatherModule,CropModule,
+         
             PrometheusModule.register({
       path: '/metrics',
     }),],

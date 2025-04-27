@@ -51,7 +51,8 @@ export class IdentityService {
       const newUser = new this.userModel({
         ...userData,
         password: hashedPassword,
-        image: userData.image || null
+        image: userData.image || null,
+        createdAt: new Date()
       });
 
       const savedUser = await newUser.save();
@@ -158,33 +159,46 @@ export class IdentityService {
 
   //  Update User
   async updateUser(id: string, updateData: UpdateUserDto) {
+    try {
+      // Vérifier si l'utilisateur existe
+      const user = await this.userModel.findById(id);
+      if (!user) {
+        throw new RpcException('User not found');
+      }
 
-    if(updateData.password)
-    {
-      updateData.password = await bcrypt.hash(updateData.password, 10)
+      // Mettre à jour uniquement les champs fournis
+      const updateFields = {};
+      if (updateData.fullname) updateFields['fullname'] = updateData.fullname;
+      if (updateData.email) updateFields['email'] = updateData.email.trim();
+      if (updateData.phonenumber) updateFields['phonenumber'] = updateData.phonenumber;
+      if (updateData.address) updateFields['address'] = updateData.address;
+      if (updateData.image) updateFields['image'] = updateData.image;
+
+      // Mettre à jour l'utilisateur
+      const updatedUser = await this.userModel.findByIdAndUpdate(
+        id,
+        { $set: updateFields },
+        { new: true }
+      );
+
+      // Mettre à jour le cache en arrière-plan
+      this.cacheService.set(id, updatedUser, 60).catch(() => {});
+
+      // Notifier le service land en arrière-plan
+      this.landClient.send(USER_PATTERNS.UPDATE, {
+        _id: id,
+        name: updatedUser.fullname,
+        email: updatedUser.email,
+        phone: updatedUser.phonenumber
+      }).subscribe({
+        error: () => {}
+      });
+
+      return updatedUser;
+    } catch (e) {
+      console.error('Error updating user:', e);
+      throw e;
     }
-
-
-    const user = await this.userModel.findById(id);
-    if (!user) {
-      throw new RpcException('User not found');
-    }
-    let updatedUser = null
-    try
-    {  
-
-    updatedUser = await this.userModel.findByIdAndUpdate(user._id, updateData, {new : true})
-    await this.cacheService.set(id, user, 60)
-  
-      
-    await lastValueFrom(this.landClient.send(USER_PATTERNS.UPDATE, {_id : id , name : updatedUser.fullname, email: updatedUser.email, phone : updatedUser.phonenumber}))
-
-    }catch(e)
-    {
-      throw e
-    }
-
-    return updatedUser;
   }
   // Delete User
   async deleteUser(id: string) {

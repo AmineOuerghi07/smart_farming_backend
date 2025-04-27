@@ -9,4 +9,6 @@ export const REGION_PATTERNS =
     REGION_ADD_SENSOR: 'region.addSensor',
     FIND_BY_LAND_IDS: 'region.findByLandIds',
     FIND_CONNECTED_REGIONS: 'region.findConnectedRegions',
+    ADD_ACTIVITY: 'region.addActivity',
+    SET_ACTIVITY_DONE: 'set_activity_done',
 }

@@ -36,12 +36,13 @@ export class RegionsController {
   }
   @MessagePattern(REGION_PATTERNS.REGION_ADD_PLANT) // Define this in your REGION_PATTERNS
   addPlantToRegion(
-    @Payload() data: { regionId: string; plantId: string; quantity: number },
+    @Payload() data: { regionId: string; plantId: string; quantity: number; plantingDate?: Date },
   ) {
     return this.regionsService.addPlantToRegion(
       data.regionId,
       data.plantId,
       data.quantity,
+      data.plantingDate
     );
   }
 
@@ -70,5 +71,15 @@ addSensorToRegion(
 @MessagePattern(REGION_PATTERNS.FIND_CONNECTED_REGIONS)
   findConnectedRegions(@Payload() userId: string) {
     return this.regionsService.findConnectedRegions(userId);
+  }
+  @MessagePattern(REGION_PATTERNS.ADD_ACTIVITY)
+  addActivity(@Payload() data: { regionId: string; description: string }) {
+    console.log('Handler ADD_ACTIVITY called with:', data);
+    return this.regionsService.addActivity(data.regionId, data.description);
+  }
+
+  @MessagePattern(REGION_PATTERNS.SET_ACTIVITY_DONE)
+  setActivityDone(@Payload() data: { regionId: string; activityId: string; done: boolean }) {
+    return this.regionsService.setActivityDone(data.regionId, data.activityId, data.done);
   }
 }

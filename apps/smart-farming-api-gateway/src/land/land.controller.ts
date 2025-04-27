@@ -279,6 +279,23 @@ async deletePlant(@Param('id') id: string)
   {
     return this.landService.removeRegion(id)
   }
+  @Post('/region/:regionId/activity')
+  async addActivityToRegion(
+    @Param('regionId') regionId: string,
+    @Body('description') description: string
+  ) {
+    return this.landService.addActivity(regionId, description);
+  }
+  /////
+ 
+  @Put('/region/:regionId/activity/:activityId/done')
+  async setActivityDone(
+    @Param('regionId') regionId: string,
+    @Param('activityId') activityId: string,
+    @Body('done') done: boolean
+  ) {
+    return this.landService.setActivityDone(regionId, activityId, done);
+  }
     //-----------------------------Sensor Endpoint Testing ---------------------------
     @Post('/sensor')
     async createSensor(@Body()createSensorDto : CreateSensorDto){
