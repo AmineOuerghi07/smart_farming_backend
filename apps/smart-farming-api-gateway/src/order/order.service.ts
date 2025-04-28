@@ -11,8 +11,8 @@ export class OrderService {
         return this.client.send(ORDER_PATTERNS.FIND_ALL, {})
     }
 
-    async create({ totalAmount, customerId, orderStatus }) {
-        return this.client.send(ORDER_PATTERNS.CREATE, { totalAmount, customerId, orderStatus })
+    async create({ totalAmount, customerId, orderStatus , orderItems}) {
+        return this.client.send(ORDER_PATTERNS.CREATE, { totalAmount, customerId, orderStatus, orderItems })
     }
 
     async findOne(id) {
