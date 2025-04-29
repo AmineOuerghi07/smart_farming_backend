@@ -37,6 +37,8 @@ export class IrrigationSystemService {
       const command = { 
         target_id: 'irrigation_system_1',
         pump_control: state ? 'ON' : 'OFF',
+        mode: state ? 'MANUAL' : undefined,
+        force_manual_mode: state ? true : false,
         timestamp: Date.now() / 1000
       };
 
@@ -66,7 +68,10 @@ export class IrrigationSystemService {
           );
           
           console.log('Pump command sent successfully');
-          return { success: true, message: `Pump state set to ${state ? 'ON' : 'OFF'}` };
+          return { 
+            success: true, 
+            message: `Pump state set to ${state ? 'ON' : 'OFF'}${state ? ' and switched to manual mode' : ''}` 
+          };
         } catch (error) {
           retryCount++;
           console.warn(`Attempt ${retryCount}/${maxRetries} failed: ${error.message}`);

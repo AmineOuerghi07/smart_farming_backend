@@ -17,21 +17,25 @@ export class IrrigationSystemController {
 
   @Post('pump/on')
   async turnPumpOn() {
+    // This will turn the pump on AND switch to manual mode automatically
     return this.irrigationSystemService.setPumpState(true);
   }
 
   @Post('pump/off')
   async turnPumpOff() {
+    // This will turn the pump off but stay in current mode
     return this.irrigationSystemService.setPumpState(false);
   }
 
   @Post('mode/automatic')
   async setAutomaticMode() {
+    // Switch to automatic mode where soil moisture sensor controls the pump
     return this.irrigationSystemService.setOperationMode('AUTOMATIC');
   }
 
   @Post('mode/manual')
   async setManualMode() {
+    // Switch to manual mode where pump is only controlled by API calls
     return this.irrigationSystemService.setOperationMode('MANUAL');
   }
 

@@ -373,9 +373,37 @@ export class IrrigationSystemService implements OnModuleInit, OnModuleDestroy {
   }
 
   @EventPattern(IRRIGATION_PATTERNS.SET_PUMP_STATE)
-  async setPumpState(state: boolean) {
+  async setPumpState(state: boolean | any) {
     try {
       console.log('Received setPumpState command:', state);
+      
+      // Handle both boolean and object format
+      let pumpState: boolean;
+      let forceManualMode: boolean = false;
+      let operationMode: 'AUTOMATIC' | 'MANUAL' = undefined;
+      
+      if (typeof state === 'boolean') {
+        pumpState = state;
+      } else if (typeof state === 'object') {
+        // Extract pump state from different message formats
+        if (state.pump_control) {
+          pumpState = state.pump_control === 'ON';
+        } else if (state.state !== undefined) {
+          pumpState = !!state.state;
+        } else {
+          throw new Error('Invalid pump control message format');
+        }
+        
+        // Check if we should force manual mode
+        forceManualMode = !!state.force_manual_mode;
+        
+        // Check if mode is specified
+        if (state.mode && ['AUTOMATIC', 'MANUAL'].includes(state.mode.toUpperCase())) {
+          operationMode = state.mode.toUpperCase() as 'AUTOMATIC' | 'MANUAL';
+        }
+      } else {
+        throw new Error('Invalid pump control message format');
+      }
       
       // Try to find devices, with retry logic
       let devices = Array.from(this.devices.values());
@@ -402,12 +430,34 @@ export class IrrigationSystemService implements OnModuleInit, OnModuleDestroy {
         throw new Error('Device command queue not found');
       }
 
-      console.log(`Setting pump state to ${state ? 'ON' : 'OFF'} for device ${device.id}`);
+      console.log(`Setting pump state to ${pumpState ? 'ON' : 'OFF'} for device ${device.id}`);
+      
+      // If forced to manual mode or mode specified, set operation mode first
+      if (forceManualMode || operationMode) {
+        const mode = operationMode || 'MANUAL';
+        console.log(`Setting operation mode to ${mode} due to ${forceManualMode ? 'force flag' : 'mode specification'}`);
+        
+        const modeMessage = {
+          target_id: device.id,
+          mode: mode,
+          timestamp: Date.now() / 1000,
+        };
+        
+        await this.channel.publish(
+          'irrigation',
+          `command.${device.id}`,
+          Buffer.from(JSON.stringify(modeMessage)),
+          { contentType: 'application/json', deliveryMode: 2 }
+        );
+        
+        // Wait a moment for mode change to take effect
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
 
       // Send pump control command
       const message = {
         target_id: device.id,
-        pump_control: state ? 'ON' : 'OFF',
+        pump_control: pumpState ? 'ON' : 'OFF',
         timestamp: Date.now() / 1000,
       };
 
@@ -453,8 +503,8 @@ export class IrrigationSystemService implements OnModuleInit, OnModuleDestroy {
         console.log('Device status after command:', updatedDevice);
         
         const deviceStatus = updatedDevice.status as DeviceStatus;
-        if (deviceStatus?.pump_active !== state) {
-          console.warn('Pump state mismatch - expected:', state, 'actual:', deviceStatus?.pump_active);
+        if (deviceStatus?.pump_active !== pumpState) {
+          console.warn('Pump state mismatch - expected:', pumpState, 'actual:', deviceStatus?.pump_active);
         }
       } catch (error) {
         console.warn('Failed to verify pump state:', error);
