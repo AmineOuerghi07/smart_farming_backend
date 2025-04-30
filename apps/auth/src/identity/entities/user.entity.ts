@@ -1,12 +1,11 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
-
 export enum Role
 {
     "ADMIN", "USER"
 }
 
-@Schema()
+@Schema({ timestamps: true })
 export class User {
 
 
@@ -32,7 +31,6 @@ export class User {
     isVerified: boolean
     @Prop()
     image?: string
-
 }
 
 export const userSchema = SchemaFactory.createForClass(User)

@@ -13,10 +13,14 @@ import { makeCounterProvider, makeGaugeProvider, PrometheusModule } from '@wills
 import { CustomMetricsMiddleware } from './middleware/custom-metrics-middleware';
 
 
+import { CropModule } from './weather/crop.module';
+import { IrrigationSystemService } from './irrigation-system/irrigation-system.service';
+import { IrrigationSystemController } from './irrigation-system/irrigation-system.controller';
+import { IrrigationSystemModule } from './irrigation-system/irrigation-system.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { WeatherModule } from './weather/weather.module';
-import { CropModule } from './weather/crop.module';
+
 
 
 @Module({
@@ -35,10 +39,11 @@ import { CropModule } from './weather/crop.module';
         LandModule,
          SensorsModule,
           AccountModule,
-          WeatherModule,CropModule,
+WeatherModule        , 
             PrometheusModule.register({
       path: '/metrics',
-    }),],
+    }),
+            IrrigationSystemModule,],
 
   controllers: [SmartFarmingApiGatewayController],
   providers: [SmartFarmingApiGatewayService,
@@ -50,7 +55,8 @@ import { CropModule } from './weather/crop.module';
     makeGaugeProvider({
       name: 'gauge',
       help: 'metric_help',
-    }),],
+    }),
+    ],
 })
 export class SmartFarmingApiGatewayModule { 
   configure(consumer: MiddlewareConsumer) {

@@ -31,7 +31,7 @@ export class IdentityService {
   ) {}
   
     // Define CLIENT_ID as a static readonly constant
-    static readonly CLIENT_ID = '658552563772-98rrs329hqrinquc5e0sfpv8oahnq3ds.apps.googleusercontent.com';
+    static readonly CLIENT_ID = '151384406941-pms7mt32121d8lfpdnk4f4sg1br0g5it.apps.googleusercontent.com';
 
     // Define client as a static readonly property
     static readonly client = new OAuth2Client(IdentityService.CLIENT_ID);
@@ -51,7 +51,8 @@ export class IdentityService {
       const newUser = new this.userModel({
         ...userData,
         password: hashedPassword,
-        image: userData.image || null
+        image: userData.image || null,
+        createdAt: new Date()
       });
 
       const savedUser = await newUser.save();
@@ -158,33 +159,46 @@ export class IdentityService {
 
   //  Update User
   async updateUser(id: string, updateData: UpdateUserDto) {
+    try {
+      // Vérifier si l'utilisateur existe
+      const user = await this.userModel.findById(id);
+      if (!user) {
+        throw new RpcException('User not found');
+      }
 
-    if(updateData.password)
-    {
-      updateData.password = await bcrypt.hash(updateData.password, 10)
+      // Mettre à jour uniquement les champs fournis
+      const updateFields = {};
+      if (updateData.fullname) updateFields['fullname'] = updateData.fullname;
+      if (updateData.email) updateFields['email'] = updateData.email.trim();
+      if (updateData.phonenumber) updateFields['phonenumber'] = updateData.phonenumber;
+      if (updateData.address) updateFields['address'] = updateData.address;
+      if (updateData.image) updateFields['image'] = updateData.image;
+
+      // Mettre à jour l'utilisateur
+      const updatedUser = await this.userModel.findByIdAndUpdate(
+        id,
+        { $set: updateFields },
+        { new: true }
+      );
+
+      // Mettre à jour le cache en arrière-plan
+      this.cacheService.set(id, updatedUser, 60).catch(() => {});
+
+      // Notifier le service land en arrière-plan
+      this.landClient.send(USER_PATTERNS.UPDATE, {
+        _id: id,
+        name: updatedUser.fullname,
+        email: updatedUser.email,
+        phone: updatedUser.phonenumber
+      }).subscribe({
+        error: () => {}
+      });
+
+      return updatedUser;
+    } catch (e) {
+      console.error('Error updating user:', e);
+      throw e;
     }
-
-
-    const user = await this.userModel.findById(id);
-    if (!user) {
-      throw new RpcException('User not found');
-    }
-    let updatedUser = null
-    try
-    {  
-
-    updatedUser = await this.userModel.findByIdAndUpdate(user._id, updateData, {new : true})
-    await this.cacheService.set(id, user, 60)
-  
-      
-    await lastValueFrom(this.landClient.send(USER_PATTERNS.UPDATE, {_id : id , name : updatedUser.fullname, email: updatedUser.email, phone : updatedUser.phonenumber}))
-
-    }catch(e)
-    {
-      throw e
-    }
-
-    return updatedUser;
   }
   // Delete User
   async deleteUser(id: string) {
@@ -208,19 +222,65 @@ export class IdentityService {
   }
 
   async googleLogin(googleUser: any) {
-    console.log("Received Google User:", googleUser);
-    let user = await this.userModel.findOne({ email: googleUser.email });
-    if (!user) {
-      user = new this.userModel({
-        email: googleUser.email,
-        fullname: googleUser.fullname,
-        password: null,
-        phonenumber: "N/A",
-        address: "N/A",
+    try {
+     
+      
+      // Vérifier si l'utilisateur existe déjà
+      let user = await this.userModel.findOne({ email: googleUser.email });
+      
+      if (!user) {
+        // Créer un nouvel utilisateur si n'existe pas
+        user = new this.userModel({
+          email: googleUser.email,
+          fullname: googleUser.fullname,
+          image: googleUser.image || null,
+          phonenumber: "N/A",
+          address: "N/A",
+          roles: ["user"],
+          createdAt: new Date()
+        });
+        await user.save();
+      } else {
+        // Mettre à jour les informations de l'utilisateur existant
+        user.fullname = googleUser.fullname;
+        user.image = googleUser.image || user.image;
+        await user.save();
+      }
+
+      // Générer le token JWT
+      const payload = { 
+        id: user._id, 
+        email: user.email, 
+        roles: user.roles 
+      };
+      const token = this.jwtService.sign(payload);
+
+      // Notifier le service land en arrière-plan
+      this.landClient.emit(USER_PATTERNS.CREATE, {
+        _id: user._id,
+        name: user.fullname,
+        email: user.email,
+        phone: user.phonenumber,
+        image: user.image
+      }).subscribe({
+        error: (error) => console.error("Erreur lors de la notification au service land:", error)
       });
-      await user.save();
+
+      return { 
+        message: 'Google login successful', 
+        token,
+        user: {
+          _id: user._id,
+          email: user.email,
+          fullname: user.fullname,
+          image: user.image,
+          roles: user.roles
+        }
+      };
+    } catch (error) {
+      console.error("❌ [Backend] Erreur lors de la connexion Google:", error);
+      throw new RpcException(error.message || "Erreur lors de la connexion Google");
     }
-    return user;
   }
   
 

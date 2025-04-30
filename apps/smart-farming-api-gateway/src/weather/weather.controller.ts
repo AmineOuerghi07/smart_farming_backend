@@ -1,21 +1,34 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
 import { WeatherService } from './weather.service';
 
 @Controller('weather')
 export class WeatherController {
   constructor(private readonly weatherService: WeatherService) {}
 
-  @Get()
-  async getWeather(@Query('city') city: string) {
-    return this.weatherService.getWeather(city);  
+  @Get('coordinates')
+  async getWeatherByCoordinates(
+    @Query('lat') lat: number,
+    @Query('lon') lon: number
+  ) {
+    if (!lat || !lon) throw new BadRequestException('Les paramètres lat et lon sont requis');
+    return await this.weatherService.getWeatherByCoordinates(lat, lon);
   }
 
-  @Get('humidity-details')
-  async getHumidityDetails(@Query('city') city: string) {
-    if (!city) {
-      throw new Error('City parameter is required');
-    }
-    return this.weatherService.getHumidityDetails(city);
+  @Get('forecast/coordinates')
+  async getForecastByCoordinates(
+    @Query('lat') lat: number,
+    @Query('lon') lon: number
+  ) {
+    if (!lat || !lon) throw new BadRequestException('Les paramètres lat et lon sont requis');
+    return await this.weatherService.getForecastByCoordinates(lat, lon);
   }
-  
+
+  @Get('humidity-details/coordinates')
+  async getHumidityDetailsByCoordinates(
+    @Query('lat') lat: number,
+    @Query('lon') lon: number
+  ) {
+    if (!lat || !lon) throw new BadRequestException('Les paramètres lat et lon sont requis');
+    return await this.weatherService.getHumidityDetailsByCoordinates(lat, lon);
+  }
 }
