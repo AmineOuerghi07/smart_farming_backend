@@ -7,7 +7,7 @@ import { diskStorage } from 'multer';
 import { CreateProductDto } from '@app/contracts/product/dto/create-product.dto';
 export const getUploadPath = (subdirectory: string) => {
   const rootPath = join(process.cwd(), 'assets', subdirectory);
-  
+
   if (!existsSync(rootPath)) {
     mkdirSync(rootPath, { recursive: true });
   }
@@ -23,10 +23,11 @@ export class ProductController {
     return this.productService.findAll();
   }
 
-  @Get('id')
-  async findOne(@Body() { id }) {
+  @Get(':id')
+  async findOne(@Param() { id }) {
     return this.productService.findOne(id);
   }
+
   @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
       destination: getUploadPath('products'),
@@ -53,6 +54,11 @@ export class ProductController {
       price: parseFloat(Array.isArray(body.price) ? body.price[0] : body.price),
       quantity: body.quantity ? parseInt(Array.isArray(body.quantity) ? body.quantity[0] : body.quantity, 10) : undefined,
       stockQuantity: parseInt(Array.isArray(body.stockQuantity) ? body.stockQuantity[0] : body.stockQuantity, 10),
+      rating: body.rating
+        ? Array.isArray(body.rating)
+          ? body.rating.map((r: string) => JSON.parse(r))
+          : JSON.parse(body.rating)
+        : undefined,
     };
 
     const filePath = file ? `products/${file.filename}` : null;
@@ -89,19 +95,24 @@ export class ProductController {
       description: Array.isArray(body.description) ? body.description[0] : body.description || undefined,
       price: body.price ? parseFloat(Array.isArray(body.price) ? body.price[0] : body.price) : undefined,
       quantity: body.quantity ? parseInt(
-        Array.isArray(body.quantity) 
+        Array.isArray(body.quantity)
           ? body.quantity[0]
-          : body.quantity, 
+          : body.quantity,
         10
       ) : undefined,
       stockQuantity: body.stockQuantity ? parseInt(
-        Array.isArray(body.stockQuantity) 
-          ? body.stockQuantity[0] 
-          : body.stockQuantity, 
+        Array.isArray(body.stockQuantity)
+          ? body.stockQuantity[0]
+          : body.stockQuantity,
         10
       ) : undefined,
       createdAt: body.createdAt ? (Array.isArray(body.createdAt) ? body.createdAt[0] : body.createdAt) : undefined,
       updatedAt: body.updatedAt ? (Array.isArray(body.updatedAt) ? body.updatedAt[0] : body.updatedAt) : undefined,
+      rating: body.rating
+        ? Array.isArray(body.rating)
+          ? body.rating.map((r: string) => JSON.parse(r))
+          : JSON.parse(body.rating)
+        : undefined,
     };
 
     if (Array.isArray(body.quantity) && body.quantity.length > 1) {

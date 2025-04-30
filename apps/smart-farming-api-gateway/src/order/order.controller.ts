@@ -16,8 +16,8 @@ export class OrderController {
     }
 
     @Post()
-    async create(@Body() { totalAmount, customerId, orderStatus }) {
-        return this.orderService.create({ totalAmount, customerId, orderStatus })
+    async create(@Body() { totalAmount, customerId, orderStatus , orderItems }) {
+        return this.orderService.create({ totalAmount, customerId, orderStatus , orderItems})
     }
 
     @Patch()

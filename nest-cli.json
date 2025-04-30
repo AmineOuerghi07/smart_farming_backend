@@ -46,6 +46,15 @@
         "tsConfigPath": "apps/inventory/tsconfig.app.json"
       }
     },
+    "irragation-system": {
+      "type": "application",
+      "root": "apps/irragation-system",
+      "entryFile": "main",
+      "sourceRoot": "apps/irragation-system/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/irragation-system/tsconfig.app.json"
+      }
+    },
     "land-service": {
       "type": "application",
       "root": "apps/land-service",
