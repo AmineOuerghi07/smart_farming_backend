@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import axios from 'axios';
 
 @Injectable()
@@ -8,41 +8,221 @@ export class WeatherService {
   private readonly geoUrl = 'https://api.openweathermap.org/geo/1.0';
 
   async getWeather(city: string) {
-    const url = `${this.baseUrl}/weather?q=${city}&appid=${this.apiKey}&units=metric`;
-    console.log('API Request URL:', url);
-  
     try {
+      // Extraire le nom de la ville sans le suffixe :tunisia
+      const cityName = city.split(':')[0].trim();
+      
+      // Essayer d'abord avec le nom original
+      try {
+        const url = `${this.baseUrl}/weather?q=${encodeURIComponent(cityName)},tn&appid=${this.apiKey}&units=metric`;
+        console.log('API Request URL:', url);
+        const response = await axios.get(url);
+        console.log('API Response:', response.data);
+        return this.formatWeatherResponse(response.data);
+      } catch (error) {
+        // Si l'API ne trouve pas la ville, essayer avec une ville par défaut
+        console.log('Ville non trouvée, utilisation de Tunis comme ville par défaut');
+        const defaultUrl = `${this.baseUrl}/weather?q=Tunis,tn&appid=${this.apiKey}&units=metric`;
+        const defaultResponse = await axios.get(defaultUrl);
+        return this.formatWeatherResponse(defaultResponse.data);
+      }
+    } catch (error) {
+      console.error('API Error:', error.response?.data || error.message);
+      throw new BadRequestException('Erreur lors de la récupération des données météo');
+    }
+  }
+
+  async getWeatherByCoordinates(lat: number, lon: number) {
+    try {
+      const url = `${this.baseUrl}/weather?lat=${lat}&lon=${lon}&appid=${this.apiKey}&units=metric`;
+      console.log('API Request URL:', url);
       const response = await axios.get(url);
       console.log('API Response:', response.data);
       return this.formatWeatherResponse(response.data);
     } catch (error) {
       console.error('API Error:', error.response?.data || error.message);
-      throw new Error('Failed to fetch weather data');
-    }
-  }
-
-  async getCityFromCoords(lat: number, lon: number) {
-    const url = `${this.geoUrl}/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${this.apiKey}`;
-    try {
-      const response = await axios.get(url);
-      if (response.data && response.data.length > 0) {
-        return response.data[0].name;
-      }
-      throw new Error('No city found for these coordinates');
-    } catch (error) {
-      console.error('Geocoding Error:', error.response?.data || error.message);
-      throw new Error('Failed to get city from coordinates');
+      throw new BadRequestException('Erreur lors de la récupération des données météo');
     }
   }
 
   async getForecast(city: string) {
-    const url = `${this.baseUrl}/forecast?q=${city}&appid=${this.apiKey}&units=metric`;
     try {
+      // Extraire le nom de la ville sans le suffixe :tunisia
+      const cityName = city.split(':')[0].trim();
+      
+      // Essayer d'abord avec le nom original
+      try {
+        const url = `${this.baseUrl}/forecast?q=${encodeURIComponent(cityName)},tn&appid=${this.apiKey}&units=metric`;
+        console.log('Forecast API Request URL:', url);
+        const response = await axios.get(url);
+        console.log('Forecast API Response:', response.data);
+        return this.formatForecastResponse(response.data);
+      } catch (error) {
+        // Si l'API ne trouve pas la ville, essayer avec une ville par défaut
+        console.log('Ville non trouvée, utilisation de Tunis comme ville par défaut');
+        const defaultUrl = `${this.baseUrl}/forecast?q=Tunis,tn&appid=${this.apiKey}&units=metric`;
+        const defaultResponse = await axios.get(defaultUrl);
+        return this.formatForecastResponse(defaultResponse.data);
+      }
+    } catch (error) {
+      console.error('Forecast API Error:', error.response?.data || error.message);
+      throw new BadRequestException('Erreur lors de la récupération des prévisions');
+    }
+  }
+
+  async getForecastByCoordinates(lat: number, lon: number) {
+    try {
+      const url = `${this.baseUrl}/forecast?lat=${lat}&lon=${lon}&appid=${this.apiKey}&units=metric`;
+      console.log('Forecast API Request URL:', url);
       const response = await axios.get(url);
+      console.log('Forecast API Response:', response.data);
       return this.formatForecastResponse(response.data);
     } catch (error) {
-      console.error('Forecast Error:', error.response?.data || error.message);
-      throw new Error('Failed to fetch forecast data');
+      console.error('Forecast API Error:', error.response?.data || error.message);
+      throw new BadRequestException('Erreur lors de la récupération des prévisions');
+    }
+  }
+
+  async getHumidityDetails(city: string) {
+    try {
+      console.log('🌡️ [WeatherService] Début de la récupération des détails d\'humidité pour:', city);
+      
+      const encodedCity = encodeURIComponent(city);
+      const currentUrl = `${this.baseUrl}/weather?q=${encodedCity}&appid=${this.apiKey}&units=metric`;
+      const forecastUrl = `${this.baseUrl}/forecast?q=${encodedCity}&appid=${this.apiKey}&units=metric`;
+
+      console.log('🌡️ [WeatherService] URLs:', { currentUrl, forecastUrl });
+
+      const [currentResponse, forecastResponse] = await Promise.all([
+        axios.get(currentUrl),
+        axios.get(forecastUrl)
+      ]);
+
+      if (!currentResponse.data || !forecastResponse.data) {
+        throw new BadRequestException('No humidity data received');
+      }
+
+      const currentData = currentResponse.data;
+      const forecastData = forecastResponse.data;
+
+      console.log('🌡️ [WeatherService] Données reçues:', {
+        current: currentData.main?.humidity,
+        forecast: forecastData.list?.length
+      });
+
+      const keyTimes = this.extractKeyTimes(forecastData.list);
+      const todayHumidityValues = forecastData.list.slice(0, 8).map(item => item.main.humidity);
+      const avgToday = this.calculateAverage(todayHumidityValues);
+      const avgYesterday = this.calculateAverage(todayHumidityValues.map(v => v + (Math.random() * 10 - 5)));
+
+      const result = {
+        humidity: {
+          current: `${currentData.main.humidity}%`,
+          dewPoint: `${this.calculateDewPoint(currentData.main.temp, currentData.main.humidity)}°C`,
+          hourlyReadings: keyTimes,
+          chart: {
+            labels: keyTimes.map(item => item.time),
+            data: keyTimes.map(item => parseInt(item.value)),
+            scale: {
+              min: 0,
+              max: 100,
+              steps: [0, 20, 40, 60, 80, 100]
+            }
+          }
+        },
+        dailySummary: {
+          averageHumidity: `${Math.round(avgToday)}%`,
+          dewPointRange: this.calculateDewPointRange(forecastData),
+          description: this.getHumidityDescription(keyTimes)
+        },
+        dailyComparison: {
+          today: `${Math.round(avgToday)}%`,
+          yesterday: `${Math.round(avgYesterday)}%`,
+          difference: `${Math.abs(Math.round(avgToday - avgYesterday))}% ${avgToday > avgYesterday ? 'higher' : 'lower'}`,
+          trend: avgToday > avgYesterday ? 'increasing' : 'decreasing'
+        },
+        relativeHumidity: {
+          definition: "Relative humidity measures how much water vapor is in the air compared to the maximum possible at that temperature.",
+          currentImpact: this.getHumidityImpact(currentData.main.humidity)
+        }
+      };
+
+      console.log('✅ [WeatherService] Données d\'humidité formatées avec succès');
+      return result;
+    } catch (error) {
+      console.error('❌ [WeatherService] Erreur:', error);
+      throw new BadRequestException('Failed to fetch humidity details');
+    }
+  }
+
+  async getHumidityDetailsByCoordinates(lat: number, lon: number) {
+    try {
+      console.log('🌡️ [WeatherService] Début de la récupération des détails d\'humidité pour les coordonnées:', lat, lon);
+      
+      const currentUrl = `${this.baseUrl}/weather?lat=${lat}&lon=${lon}&appid=${this.apiKey}&units=metric`;
+      const forecastUrl = `${this.baseUrl}/forecast?lat=${lat}&lon=${lon}&appid=${this.apiKey}&units=metric`;
+
+      console.log('🌡️ [WeatherService] URLs:', { currentUrl, forecastUrl });
+
+      const [currentResponse, forecastResponse] = await Promise.all([
+        axios.get(currentUrl),
+        axios.get(forecastUrl)
+      ]);
+
+      if (!currentResponse.data || !forecastResponse.data) {
+        throw new BadRequestException('No humidity data received');
+      }
+
+      const currentData = currentResponse.data;
+      const forecastData = forecastResponse.data;
+
+      console.log('🌡️ [WeatherService] Données reçues:', {
+        current: currentData.main?.humidity,
+        forecast: forecastData.list?.length
+      });
+
+      const keyTimes = this.extractKeyTimes(forecastData.list);
+      const todayHumidityValues = forecastData.list.slice(0, 8).map(item => item.main.humidity);
+      const avgToday = this.calculateAverage(todayHumidityValues);
+      const avgYesterday = this.calculateAverage(todayHumidityValues.map(v => v + (Math.random() * 10 - 5)));
+
+      const result = {
+        humidity: {
+          current: `${currentData.main.humidity}%`,
+          dewPoint: `${this.calculateDewPoint(currentData.main.temp, currentData.main.humidity)}°C`,
+          hourlyReadings: keyTimes,
+          chart: {
+            labels: keyTimes.map(item => item.time),
+            data: keyTimes.map(item => parseInt(item.value)),
+            scale: {
+              min: 0,
+              max: 100,
+              steps: [0, 20, 40, 60, 80, 100]
+            }
+          }
+        },
+        dailySummary: {
+          averageHumidity: `${Math.round(avgToday)}%`,
+          dewPointRange: this.calculateDewPointRange(forecastData),
+          description: this.getHumidityDescription(keyTimes)
+        },
+        dailyComparison: {
+          today: `${Math.round(avgToday)}%`,
+          yesterday: `${Math.round(avgYesterday)}%`,
+          difference: `${Math.abs(Math.round(avgToday - avgYesterday))}% ${avgToday > avgYesterday ? 'higher' : 'lower'}`,
+          trend: avgToday > avgYesterday ? 'increasing' : 'decreasing'
+        },
+        relativeHumidity: {
+          definition: "Relative humidity measures how much water vapor is in the air compared to the maximum possible at that temperature.",
+          currentImpact: this.getHumidityImpact(currentData.main.humidity)
+        }
+      };
+
+      console.log('✅ [WeatherService] Données d\'humidité formatées avec succès');
+      return result;
+    } catch (error) {
+      console.error('❌ [WeatherService] Erreur:', error);
+      throw new BadRequestException('Failed to fetch humidity details');
     }
   }
 
@@ -98,7 +278,7 @@ export class WeatherService {
   private formatForecastResponse(forecastData: any) {
     const dailyForecasts = [];
     const processedDates = new Set();
-    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const daysOfWeek = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 
     for (const item of forecastData.list) {
       const date = new Date(item.dt * 1000);
@@ -133,62 +313,6 @@ export class WeatherService {
     }
 
     return '0%';
-  }
-
-  async getHumidityDetails(city: string) {
-    const encodedCity = encodeURIComponent(city);
-    const currentUrl = `${this.baseUrl}/weather?q=${encodedCity}&appid=${this.apiKey}&units=metric`;
-    const forecastUrl = `${this.baseUrl}/forecast?q=${encodedCity}&appid=${this.apiKey}&units=metric`;
-
-    try {
-      const [currentResponse, forecastResponse] = await Promise.all([
-        axios.get(currentUrl),
-        axios.get(forecastUrl)
-      ]);
-
-      const currentData = currentResponse.data;
-      const forecastData = forecastResponse.data;
-
-      const keyTimes = this.extractKeyTimes(forecastData.list);
-      const todayHumidityValues = forecastData.list.slice(0, 8).map(item => item.main.humidity);
-      const avgToday = this.calculateAverage(todayHumidityValues);
-      const avgYesterday = this.calculateAverage(todayHumidityValues.map(v => v + (Math.random() * 10 - 5)));
-
-      return {
-        humidity: {
-          current: `${currentData.main.humidity}%`,
-          dewPoint: `${this.calculateDewPoint(currentData.main.temp, currentData.main.humidity)}°C`,
-          hourlyReadings: keyTimes,
-          chart: {
-            labels: keyTimes.map(item => item.time),
-            data: keyTimes.map(item => parseInt(item.value)),
-            scale: {
-              min: 0,
-              max: 100,
-              steps: [0, 20, 40, 60, 80, 100]
-            }
-          }
-        },
-        dailySummary: {
-          averageHumidity: `${Math.round(avgToday)}%`,
-          dewPointRange: this.calculateDewPointRange(forecastData),
-          description: this.getHumidityDescription(keyTimes)
-        },
-        dailyComparison: {
-          today: `${Math.round(avgToday)}%`,
-          yesterday: `${Math.round(avgYesterday)}%`,
-          difference: `${Math.abs(Math.round(avgToday - avgYesterday))}% ${avgToday > avgYesterday ? 'higher' : 'lower'}`,
-          trend: avgToday > avgYesterday ? 'increasing' : 'decreasing'
-        },
-        relativeHumidity: {
-          definition: "Relative humidity measures how much water vapor is in the air compared to the maximum possible at that temperature.",
-          currentImpact: this.getHumidityImpact(currentData.main.humidity)
-        }
-      };
-    } catch (error) {
-      console.error('API Error:', error);
-      throw new Error('Failed to fetch humidity details');
-    }
   }
 
   private extractKeyTimes(forecastList: any[]): { time: string; value: string }[] {
@@ -280,4 +404,4 @@ export class WeatherService {
 
     return adviceMessage;
   }
-} 
+}
