@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsUrl } from 'class-validator';
+import { IsString, IsNumber, IsUrl, IsOptional } from 'class-validator';
 
 export class CreatePlantDto {
 
@@ -8,6 +8,12 @@ export class CreatePlantDto {
 
   @IsString()
   description: string;
+
+  @IsNumber()
+  @IsOptional()
+  plantingYear?: number;
+
+ 
 
   
 }

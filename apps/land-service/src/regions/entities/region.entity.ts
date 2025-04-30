@@ -14,16 +14,24 @@ export class Region  {
 
   @Prop([{ type: 'ObjectId', ref: 'Sensor' }])
   sensors: (Types.ObjectId | Sensor)[];
-  @Prop({
+ @Prop({
     type: [{
       plant: { type: 'ObjectId', ref: 'Plant' },
-      quantity: { type: Number, default: 0 }
+      quantity: { type: Number, default: 0 },
+      plantingDate: { type: Date }
     }],
     default: [], // Critical: Ensures plants is always an array
   })
-  plants: { plant: Types.ObjectId; quantity: number }[];
+  plants: { plant: Types.ObjectId; quantity: number; plantingDate?: Date }[];
 
   @Prop({ type: Boolean, default: false })
   isConnected: boolean;
+
+  
+  @Prop({
+    type: [{ description: String, done: Boolean }],
+    default: [],
+  })
+  activities?: { description: string; done: boolean }[];
 }
 export const RegionSchema = SchemaFactory.createForClass(Region);
