@@ -13,13 +13,14 @@ import { makeCounterProvider, makeGaugeProvider, PrometheusModule } from '@wills
 import { CustomMetricsMiddleware } from './middleware/custom-metrics-middleware';
 
 
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
-import { WeatherModule } from './weather/weather.module';
 import { CropModule } from './weather/crop.module';
 import { IrrigationSystemService } from './irrigation-system/irrigation-system.service';
 import { IrrigationSystemController } from './irrigation-system/irrigation-system.controller';
 import { IrrigationSystemModule } from './irrigation-system/irrigation-system.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { WeatherModule } from './weather/weather.module';
+
 
 
 @Module({
@@ -38,7 +39,7 @@ import { IrrigationSystemModule } from './irrigation-system/irrigation-system.mo
         LandModule,
          SensorsModule,
           AccountModule,
-          WeatherModule,CropModule,
+WeatherModule        , 
             PrometheusModule.register({
       path: '/metrics',
     }),

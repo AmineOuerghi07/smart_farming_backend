@@ -50,7 +50,6 @@
     "class-validator": "^0.14.1",
     "google-auth-library": "^9.15.1",
     "install": "^0.13.0",
-    "mdns": "^2.7.2",
     "mongoose": "^8.10.1",
     "otp-generator": "^4.0.1",
     "prom-client": "^15.1.3",

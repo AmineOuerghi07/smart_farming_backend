@@ -67,7 +67,6 @@ export class AccountController {
    return req.user; // Access user data from the request
  }
 
-
  @Put('update/:id')
  @UseInterceptors(FileInterceptor('file', {
    storage: diskStorage({
@@ -81,32 +80,29 @@ export class AccountController {
    }),
  }))
  async updateUser(
-  @Param('id') id: string,
-  @UploadedFile() file: Express.Multer.File,
-  @Body() updateData: UpdateUserDto,
-) {
-  try {
-    if (file) {
-      const imageUrl = `users/${file.filename}`;
-      updateData.image = imageUrl;
-    }
+   @Param('id') id: string,
+   @UploadedFile() file: Express.Multer.File,
+   @Body() updateData: UpdateUserDto,
+ ) {
+   try {
+     if (file) {
+       updateData.image = `users/${file.filename}`;
+     }
 
-    // Trim email to remove any whitespace/newlines
-    if (updateData.email) {
-      updateData.email = updateData.email.trim();
-    }
+     if (updateData.email) {
+       updateData.email = updateData.email.trim();
+     }
 
-    console.log('Updating user with data:', updateData);
-
-    return await this.accountService.updateUser(id, updateData);
-  } catch (e) {
-    console.error('Full error:', e); // Log complete error
-    throw new HttpException(
-      `Updating User failed: ${e.message || 'Unknown error'}`,
-      HttpStatus.BAD_REQUEST
-    );
-  }
-}
+     // Update user in the database
+     return await this.accountService.updateUser(id, updateData);
+   } catch (e) {
+     console.error('Error updating user:', e);
+     throw new HttpException(
+       `Updating User failed: ${e.message || 'Unknown error'}`,
+       HttpStatus.BAD_REQUEST
+     );
+   }
+ }
 
   @Delete('remove/:id')
   async deleteUser(@Param('id') id: string) {

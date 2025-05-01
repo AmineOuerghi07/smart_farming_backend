@@ -5,7 +5,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AUTH_NAME } from '@app/contracts/auth/auth.rmq';
 import { AUTH_PATTERNS } from '@app/contracts/auth/auth.patterns';
 import { OTP_PATTERNS } from '@app/contracts/auth/otp/otp.patterns';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class AccountService {
@@ -61,15 +61,15 @@ export class AccountService {
 
   ///
   public async updateUser(id: string, updateData: any) {
-    try
-    {
-      return await lastValueFrom(this.client.send(AUTH_PATTERNS.UPDATE_USER, { id, updateData }));  
-    }catch(e)
-    {
-      console.log("Error in update ?")
-      throw e;
+    try {
+      // Sending update request to the auth service and awaiting the result
+      return await lastValueFrom(
+        this.client.send(AUTH_PATTERNS.UPDATE_USER, { id, updateData })
+      );
+    } catch (e) {
+      console.error('Error updating user:', e);
+      throw new Error(`Update failed: ${e.message || 'Unknown error'}`);
     }
-    
   }
 
   // Delete User

@@ -1,6 +1,22 @@
 services:
+
+  irrigation-service:
+    image: amineouerghi07/irrigationservice:1.0
+    container_name: irrigationService
+    build: 
+      context: ./
+      dockerfile: ./apps/irragation-system/Dockerfile
+      target: dev
+    init: true
+    depends_on:
+      - rabbitmq
+    networks:
+      - smart-farming-backend
+    restart: unless-stopped
+
+    
   auth:
-    image: authservice:1.0
+    image: amineouerghi07/authservice:1.0
     container_name: authService
     build: 
       context: ./
@@ -19,12 +35,13 @@ services:
     restart: unless-stopped
 
   facture:
-    image: factureservice:1.0
+    image: amineouerghi07/factureservice:1.0
     container_name: factureService
     build: 
       context: ./
       dockerfile: ./apps/facture/Dockerfile
       target: dev
+
     init: true
     depends_on:
       - mongo
@@ -38,7 +55,7 @@ services:
     restart: unless-stopped
 
   land-service:
-    image: landservice:1.0
+    image: amineouerghi07/landservice:1.0
     container_name: landService
     build: 
       context: ./
@@ -57,7 +74,7 @@ services:
     restart: unless-stopped
   
   order:
-    image: orderservice:1.0
+    image: amineouerghi07/orderservice:1.0
     container_name: orderService
     build: 
       context: ./
@@ -76,7 +93,7 @@ services:
     restart: unless-stopped
   
   product:
-    image: productservice:1.0
+    image: amineouerghi07/productservice:1.0
     container_name: productService
     build: 
       context: ./
@@ -95,7 +112,7 @@ services:
     restart: unless-stopped
   
   sensor-service:
-    image: sensorservice:1.0
+    image: amineouerghi07/sensorservice:1.0
     container_name: sensorService
     build: 
       context: ./
@@ -113,8 +130,14 @@ services:
       - smart-farming-backend
     restart: unless-stopped
   
+
+
+
+
+
+
   smart-farming-api-gateway:
-    image: smartfarmingapigateway:1.0
+    image: amineouerghi07/smartfarmingapigateway:1.0
     container_name: smartFarmingApiGateway
     ports:
       - "3000:3000"
@@ -137,6 +160,8 @@ services:
       - RABBITMQ_URL=amqp://rabbitmq:5672
     networks:
       - smart-farming-backend
+    volumes:
+      - assets-data:/usr/src/app/assets
     restart: unless-stopped
 
   rabbitmq:
@@ -201,7 +226,7 @@ services:
     image: mongo:4.0.28-xenial
     container_name: mongo
     ports: 
-      - "27017:27017"
+      - "27018:27017"
     networks:
       - smart-farming-backend
     volumes:
@@ -217,5 +242,7 @@ volumes:
   cache:
     driver: local
   grafana-storage:
+    driver: local
+  assets-data:
     driver: local
   

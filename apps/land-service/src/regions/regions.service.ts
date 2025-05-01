@@ -173,20 +173,16 @@ export class RegionsService implements OnModuleInit {
     return region;
   }
 
-  async addPlantToRegion(regionId: string, plantId: string, quantity: number): Promise<Region> {
+  async addPlantToRegion(regionId: string, plantId: string, quantity: number, plantingDate?: Date): Promise<Region> {
     const region = await this.regionModel.findById(regionId).exec();
 
     if (!region) throw new Error('Region not found');
 
     if (!region.plants) region.plants = [];
 
-    const plantEntry = region.plants.find((p) => p.plant && p.plant.toString() === plantId);
-    if (plantEntry) {
-      plantEntry.quantity += quantity;
-    } else {
-      const plantObjectId = new Types.ObjectId(plantId);
-      region.plants.push({ plant: plantObjectId, quantity });
-    }
+    const plantObjectId = new Types.ObjectId(plantId);
+    region.plants.push({ plant: plantObjectId, quantity, plantingDate: plantingDate || new Date() });
+
     await region.save();
     return region;
   }
@@ -271,5 +267,23 @@ export class RegionsService implements OnModuleInit {
 
     this.logger.log(`Found ${connectedRegions.length} connected regions`);
     return connectedRegions;
+  }
+
+  async addActivity(regionId: string, description: string) {
+    return this.regionModel.findByIdAndUpdate(
+      regionId,
+      { $push: { activities: { description, done: false } } },
+      { new: true }
+    );
+  }
+
+  async setActivityDone(regionId: string, activityId: string, done: boolean) {
+    const region = await this.regionModel.findById(regionId);
+    if (!region) throw new Error('Region not found');
+    const activity = region.activities.find((a: any) => a._id?.toString() === activityId);
+    if (!activity) throw new Error('Activity not found');
+    activity.done = done;
+    await region.save();
+    return region;
   }
 }
