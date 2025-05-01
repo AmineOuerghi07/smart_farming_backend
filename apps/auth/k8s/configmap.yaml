@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-configmap
+data:
+  DATABASE_URL: "mongodb://mongodb-service:27017/farm"
+  RABBITMQ_URL: "amqp://rabbitmq:5672"

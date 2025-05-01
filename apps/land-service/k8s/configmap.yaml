@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: land-configmap
+data:
+  DATABASE_URL: "mongodb://mongodb-service:27017/land-service"
+  RABBITMQ_URL: "amqp://rabbitmq:5672"
