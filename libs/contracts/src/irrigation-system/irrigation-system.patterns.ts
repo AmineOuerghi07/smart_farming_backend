@@ -8,5 +8,6 @@ export const IRRIGATION_PATTERNS = {
     SET_PUMP_STATE: 'irrigation.set_pump_state',
     SET_OPERATION_MODE: 'irrigation.set_operation_mode',
     SET_TEMPERATURE_SENSOR: 'irrigation.set_temperature_sensor',
-    UPDATE_SYSTEM_CONFIG: 'irrigation.update_system_config'
+    UPDATE_SYSTEM_CONFIG: 'irrigation.update_system_config',
+    CUSTOM_COMMAND: 'irrigation.custom_command'
 };
