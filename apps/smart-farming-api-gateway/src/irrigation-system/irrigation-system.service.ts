@@ -157,4 +157,105 @@ export class IrrigationSystemService {
       )
     );
   }
+
+  async setVentilatorState(state: boolean) {
+    try {
+      console.log('Setting ventilator state:', state);
+      
+      const command = { 
+        target_id: 'irrigation_system_1',
+        ventilator_control: state ? 'ON' : 'OFF',
+        timestamp: Date.now() / 1000
+      };
+
+      console.log('Publishing ventilator command:', command);
+      
+      await this.client.emit(
+        IRRIGATION_PATTERNS.CUSTOM_COMMAND, 
+        command
+      );
+      
+      return { 
+        success: true, 
+        message: `Ventilator state set to ${state ? 'ON' : 'OFF'}` 
+      };
+    } catch (error) {
+      console.error('Error setting ventilator state:', error);
+      throw new Error(`Failed to set ventilator state: ${error.message}`);
+    }
+  }
+
+  async getVentilatorStatus() {
+    try {
+      // First get the system status which includes ventilator info
+      const statusResponse = await this.getSystemStatus();
+      
+      // Extract ventilator-specific information
+      const data = statusResponse.data || statusResponse;
+      
+      return {
+        success: true,
+        data: {
+          ventilator_on: data.ventilator_on || false,
+          ventilator_auto: data.ventilator_auto || false,
+          ventilator_cycling: data.ventilator_cycling || false,
+          temperature: data.status?.temperature || data.temperature,
+          timestamp: Date.now() / 1000
+        }
+      };
+    } catch (error) {
+      console.error('Error getting ventilator status:', error);
+      throw new Error(`Failed to get ventilator status: ${error.message}`);
+    }
+  }
+
+  async setLedState(state: boolean) {
+    try {
+      console.log('Setting LED state:', state);
+      
+      const command = { 
+        target_id: 'irrigation_system_1',
+        led_control: state ? 'ON' : 'OFF',
+        timestamp: Date.now() / 1000
+      };
+
+      console.log('Publishing LED command:', command);
+      
+      await this.client.emit(
+        IRRIGATION_PATTERNS.CUSTOM_COMMAND, 
+        command
+      );
+      
+      return { 
+        success: true, 
+        message: `LED state set to ${state ? 'ON' : 'OFF'}` 
+      };
+    } catch (error) {
+      console.error('Error setting LED state:', error);
+      throw new Error(`Failed to set LED state: ${error.message}`);
+    }
+  }
+
+  async getLightStatus() {
+    try {
+      // First get the system status which includes light sensor info
+      const statusResponse = await this.getSystemStatus();
+      
+      // Extract light-specific information
+      const data = statusResponse.data || statusResponse;
+      
+      return {
+        success: true,
+        data: {
+          light_detected: data.light_detected || false,
+          led_active: data.led_active || false,
+          timestamp: Date.now() / 1000,
+          note: "LED uses inverted logic: ON when dark, OFF when light detected"
+        }
+      };
+    } catch (error) {
+      console.error('Error getting light status:', error);
+      throw new Error(`Failed to get light status: ${error.message}`);
+    }
+  }
 }

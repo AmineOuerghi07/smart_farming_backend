@@ -266,7 +266,12 @@ export class IrrigationSystemService implements OnModuleInit, OnModuleDestroy {
     return Array.from(this.devices.values());
   }
 
-  async sendCommand(rpiId: string, command: { pump_control?: string; mode?: string }) {
+  async sendCommand(rpiId: string, command: { 
+    pump_control?: string; 
+    mode?: string;
+    ventilator_control?: string;
+    led_control?: string;
+  }) {
     const device = this.devices.get(rpiId);
     if (!device) {
       throw new Error(`Device ${rpiId} not found`);

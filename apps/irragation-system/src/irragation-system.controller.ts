@@ -77,6 +77,46 @@ export class IrrigationSystemController {
     }
   }
 
+  @EventPattern(IRRIGATION_PATTERNS.CUSTOM_COMMAND)
+  async handleCustomCommand(command: any) {
+    try {
+      console.log('Received custom command:', command);
+      
+      // Handle ventilator control
+      if ('ventilator_control' in command) {
+        const state = command.ventilator_control === 'ON';
+        console.log(`Processing ventilator control command: ${state ? 'ON' : 'OFF'}`);
+        
+        // Forward the command to a device
+        await this.irrigationSystemService.sendCommand(
+          command.target_id, 
+          { ventilator_control: command.ventilator_control }
+        );
+        console.log('Ventilator command forwarded successfully');
+      }
+      
+      // Handle LED control
+      else if ('led_control' in command) {
+        const state = command.led_control === 'ON';
+        console.log(`Processing LED control command: ${state ? 'ON' : 'OFF'}`);
+        
+        // Forward the command to a device
+        await this.irrigationSystemService.sendCommand(
+          command.target_id, 
+          { led_control: command.led_control }
+        );
+        console.log('LED command forwarded successfully');
+      }
+      
+      // Unknown command
+      else {
+        console.warn('Unknown custom command type:', command);
+      }
+    } catch (error) {
+      console.error(`Failed to handle custom command: ${error.message}`);
+    }
+  }
+
   @MessagePattern(IRRIGATION_PATTERNS.DISCOVER_DEVICES)
   async discoverDevices() {
     try {
@@ -88,7 +128,15 @@ export class IrrigationSystemController {
   }
 
   @MessagePattern(IRRIGATION_PATTERNS.SEND_COMMAND)
-  async sendCommand({ rpiId, command }: { rpiId: string; command: { pump_control?: string; mode?: string } }) {
+  async sendCommand({ rpiId, command }: { 
+    rpiId: string; 
+    command: { 
+      pump_control?: string; 
+      mode?: string; 
+      ventilator_control?: string;
+      led_control?: string;
+    } 
+  }) {
     try {
       const result = await this.irrigationSystemService.sendCommand(rpiId, command);
       return { success: true, data: result };
@@ -136,7 +184,12 @@ export class IrrigationSystemController {
   @Post(':rpiId/command')
   async sendCommandHttp(
     @Param('rpiId') rpiId: string,
-    @Body() command: { pump_control?: string; mode?: string },
+    @Body() command: { 
+      pump_control?: string; 
+      mode?: string;
+      ventilator_control?: string;
+      led_control?: string;
+    },
   ) {
     return this.irrigationSystemService.sendCommand(rpiId, command);
   }
@@ -154,7 +207,12 @@ export class IrrigationSystemController {
   @Post('ip/:ipAddress/command')
   async sendCommandByIp(
     @Param('ipAddress') ipAddress: string,
-    @Body() command: { pump_control?: string; mode?: string },
+    @Body() command: { 
+      pump_control?: string; 
+      mode?: string;
+      ventilator_control?: string;
+      led_control?: string;
+    },
   ) {
     // Trouve d'abord le périphérique par IP
     const device = await this.irrigationSystemService.findDeviceByIp(ipAddress);
