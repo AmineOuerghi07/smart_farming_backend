@@ -11,4 +11,5 @@ export const REGION_PATTERNS =
     FIND_CONNECTED_REGIONS: 'region.findConnectedRegions',
     ADD_ACTIVITY: 'region.addActivity',
     SET_ACTIVITY_DONE: 'set_activity_done',
+    REMOVE_ACTIVITY: 'region.removeActivity',
 }

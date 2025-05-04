@@ -13,5 +13,10 @@ export class Plant {
     @Prop({ type: Number, required: false })
     plantingYear?: number;
 
+    @Prop({ type: [String], enum: ['SPRING', 'SUMMER', 'AUTUMN', 'WINTER'], required: false })
+    plantingSeasons: string[];
+
+    @Prop({ type: Date, required: false })
+    plantingDate?: Date;
 }
 export const PlantSchema = SchemaFactory.createForClass(Plant);

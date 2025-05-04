@@ -14,8 +14,9 @@ export class OtpController {
   }
   
   @MessagePattern(OTP_PATTERNS.SEND_OTP_PHONE)
-  async forgotPasswordOtpByPhone(@Payload() command : {phone : string}) {
-    return this.otpService.forgotPasswordOtpByPhone(command.phone);
+  async forgotPasswordOtpByPhone(@Payload() command : {phonenumber : string}) {
+    console.log('Received command in controller:', command);
+    return this.otpService.forgotPasswordOtpByPhone(command.phonenumber);
   }
 
 

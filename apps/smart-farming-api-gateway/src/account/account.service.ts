@@ -88,7 +88,6 @@ export class AccountService {
   }
 
   public forgotPasswordOtpByPhone(command): any {
-    console.log(command)
     return this.client.send<any, any>(OTP_PATTERNS.SEND_OTP_PHONE, command);
   }
 

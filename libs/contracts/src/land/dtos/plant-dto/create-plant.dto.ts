@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsUrl, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsUrl, IsOptional, IsDate } from 'class-validator';
 
 export class CreatePlantDto {
 

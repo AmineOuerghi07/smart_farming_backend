@@ -269,12 +269,28 @@ export class RegionsService implements OnModuleInit {
     return connectedRegions;
   }
 
-  async addActivity(regionId: string, description: string) {
-    return this.regionModel.findByIdAndUpdate(
-      regionId,
-      { $push: { activities: { description, done: false } } },
-      { new: true }
-    );
+  async addActivity(regionId: string, description: string, date?: string) {
+    try {
+      console.log('Adding activity:', { regionId, description, date });
+      const activityDate = date ? new Date(date) : new Date();
+      
+      return await this.regionModel.findByIdAndUpdate(
+        regionId,
+        { 
+          $push: { 
+            activities: { 
+              description, 
+              done: false, 
+              date: activityDate.toISOString() 
+            } 
+          } 
+        },
+        { new: true }
+      );
+    } catch (error) {
+      console.error('Error in addActivity:', error);
+      throw error;
+    }
   }
 
   async setActivityDone(regionId: string, activityId: string, done: boolean) {
@@ -283,7 +299,20 @@ export class RegionsService implements OnModuleInit {
     const activity = region.activities.find((a: any) => a._id?.toString() === activityId);
     if (!activity) throw new Error('Activity not found');
     activity.done = done;
+    if (done) {
+      activity.doneDate = new Date().toISOString();
+    } else {
+      activity.doneDate = undefined;
+    }
     await region.save();
     return region;
+  }
+
+  async removeActivity(regionId: string, activityId: string) {
+    return this.regionModel.findByIdAndUpdate(
+      regionId,
+      { $pull: { activities: { _id: activityId } } },
+      { new: true }
+    );
   }
 }
