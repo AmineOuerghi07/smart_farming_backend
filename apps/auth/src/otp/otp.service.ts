@@ -7,7 +7,6 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { EmailService } from '@app/contracts/services/email.service';
-import { SmsService } from '@app/contracts/services/sms.service';
 
 @Injectable()
 export class OtpService {
@@ -15,7 +14,6 @@ export class OtpService {
     @InjectModel(Otp.name) private readonly otpModel: Model<Otp>,
     private readonly userService: IdentityService,
     private readonly emailService: EmailService,
-    private readonly smsService: SmsService
   ) {}
 
   // Forgot Password OTP functionality
@@ -84,14 +82,8 @@ export class OtpService {
 
       await this.otpModel.create(otp);
 
-      const smsResult = await this.smsService.sendOtp(formattedPhone, otpNumber);
 
-      return { 
-        message: smsResult.message,
-        userId: user.id,
-        otp: otpNumber
-      };
-
+    
     } catch (error) {
       console.error('Erreur dans forgotPasswordOtpByPhone:', error);
       if (error instanceof HttpException) {
