@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: landservice
+  labels:
+    app: landservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: landservice
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 3
+  template:
+    metadata:
+      labels:
+        app: landservice
+    spec:
+      containers:
+        - name: landservice
+          image: amineouerghi07/landservice:1.0
+          envFrom:
+            - configMapRef:
+                name: land-configmap
+            - secretRef:
+                name: land-secret
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

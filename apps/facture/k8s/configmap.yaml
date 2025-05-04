@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: facture-configmap
+data:
+  DATABASE_URL: "mongodb://mongodb-service:27017/facture"
+  RABBITMQ_URL: "amqp://rabbitmq:5672"
