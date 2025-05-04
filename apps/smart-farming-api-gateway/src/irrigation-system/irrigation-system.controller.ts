@@ -49,6 +49,44 @@ export class IrrigationSystemController {
     return this.irrigationSystemService.setTemperatureSensor(false);
   }
 
+  // Ventilator control endpoints
+  @Post('ventilator/on')
+  async turnVentilatorOn() {
+    // Turn ventilator on (automatically switches to manual mode)
+    return this.irrigationSystemService.setVentilatorState(true);
+  }
+
+  @Post('ventilator/off')
+  async turnVentilatorOff() {
+    // Turn ventilator off (stays in manual mode)
+    return this.irrigationSystemService.setVentilatorState(false);
+  }
+
+  @Get('ventilator/status')
+  async getVentilatorStatus() {
+    // Get current ventilator status
+    return this.irrigationSystemService.getVentilatorStatus();
+  }
+
+  // LED/Light control endpoints
+  @Post('led/on')
+  async turnLedOn() {
+    // Turn LED on (overrides automatic control)
+    return this.irrigationSystemService.setLedState(true);
+  }
+
+  @Post('led/off')
+  async turnLedOff() {
+    // Turn LED off (overrides automatic control)
+    return this.irrigationSystemService.setLedState(false);
+  }
+
+  @Get('light')
+  async getLightStatus() {
+    // Get current light sensor status
+    return this.irrigationSystemService.getLightStatus();
+  }
+
   @Post('config')
   async updateSystemConfig(@Body() config: {
     dht_read_interval?: number;
