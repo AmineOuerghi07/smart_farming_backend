@@ -1,6 +1,12 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types, Schema as MongooseSchema } from "mongoose";
+class OrderItem {
+    @Prop({ type: String, required: true }) // ✅ Ensure productId is stored as a string
+    productId: string;
 
+    @Prop({ type: Number, required: true })
+    quantity: number;
+}
 @Schema()
 export class Order {
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Customer', required: false })
@@ -9,7 +15,7 @@ export class Order {
     @Prop({ required: true, default: 'pending' })
     orderStatus: string;
 
-    @Prop({ required: true })
+    @Prop({ type: [OrderItem], required: true })
     orderItems: Array<{
         productId: string;
         quantity: number;

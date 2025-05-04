@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: productservice
+  labels:
+    app: productservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: productservice
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+  template:
+    metadata:
+      labels:
+        app: productservice
+    spec:
+      containers:
+        - name: productservice
+          image: amineouerghi07/productservice:1.0
+          envFrom:
+            - configMapRef:
+                name: product-configmap
+            - secretRef:
+                name: product-secret
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

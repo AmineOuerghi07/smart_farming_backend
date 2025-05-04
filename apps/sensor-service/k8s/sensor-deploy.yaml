@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sensorservice
+  labels:
+    app: sensorservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sensorservice
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+  template:
+    metadata:
+      labels:
+        app: sensorservice
+    spec:
+      containers:
+        - name: sensorservice
+          image: amineouerghi07/sensorservice:1.0
+          envFrom:
+            - configMapRef:
+                name: sensor-configmap
+            - secretRef:
+                name: sensor-secret
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
