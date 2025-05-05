@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId, Types } from 'mongoose';
 import { CreateLandDto } from './dto/create-land.dto';
@@ -7,10 +7,14 @@ import { Land } from './entities/land.entity';
 import { Plant } from '../plants/entities/plant.entity';
 import { LandRequest } from './entities/requests.entity';
 import { CreateLandRequestDto } from './dto/create-land-request.dto';
+import { BLOCKCHAIN_NAME } from '@app/contracts/blockchain/blockchain.rmq';
+import { ClientProxy } from '@nestjs/microservices';
+import { BLOCKCHAIN_PATTERNS } from '@app/contracts/blockchain/blockchain.patterns';
+import { BlockchainDto } from '@app/contracts/blockchain/dto/blockchain.dto';
 
 @Injectable()
 export class LandsService {
-  constructor(@InjectModel(Land.name) private landModel: Model<Land>, @InjectModel(LandRequest.name) private landRequestModel) { }
+  constructor(@InjectModel(Land.name) private landModel: Model<Land>, @InjectModel(LandRequest.name) private landRequestModel, @Inject(BLOCKCHAIN_NAME) private readonly client : ClientProxy) { }
 
   async create(createLandDto: CreateLandDto): Promise<Land> {
     const createdLand = new this.landModel({
@@ -203,8 +207,13 @@ export class LandsService {
 
 
   async getLandRequestsByUserId(userId: string): Promise<LandRequest[]> {
-    const requests = await this.landRequestModel.find({ requestingUser: userId }).exec();
-    return requests;
+    const lands = await this.landModel.find({ user: userId }).exec();
+    const requests = await this.landRequestModel.find().exec();
+    const filterdRequests = requests.filter((request) => {
+      const land = lands.find((land) => land._id.toString() === request.landId.toString());
+      return land != null;
+    });
+    return filterdRequests;
   }
 
   async addRequestToLand(createLandRequestDto: CreateLandRequestDto): Promise<boolean> {
@@ -215,10 +224,14 @@ export class LandsService {
     }
     try {
       // Create a new request
-      const newRequest = await this.landRequestModel.create(createLandRequestDto).exec();
-      if (!newRequest) {
-        return false;
-      }
+      let landRequest = new LandRequest();
+      landRequest.requestingUser = new Types.ObjectId(createLandRequestDto.requestingUser);
+      landRequest.landId = new Types.ObjectId(createLandRequestDto.landId);
+      landRequest.requestDate = new Date().toString();
+      landRequest.status = 'pending'; // Default status
+      console.log('Creating new land request:', landRequest);
+      const newRequest = await this.landRequestModel.create(landRequest).exec();
+      console.log('New request created:', newRequest);
       return true;
     } catch (error) {
       console.error('Error creating land request:', error);
@@ -237,6 +250,19 @@ export class LandsService {
       if (!request) {
         throw new NotFoundException(`Request with ID ${requestId} not found`);
       }
+      const land = await this.landModel.findById({ _id: preRequest.landId }).exec();
+      land.fromDate = new Date(Date.now()).toLocaleString();
+      land.toDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toLocaleString(); // Set to one year from now
+      land.rentingUser = preRequest.requestingUser;
+      await this.landModel.findByIdAndUpdate({ _id: preRequest.landId }, land).exec();
+      let blockchainRequest = new BlockchainDto()
+      blockchainRequest.requestingUser = preRequest.requestingUser.toString();
+      blockchainRequest.fromDate = land.fromDate;
+      blockchainRequest.toDate = land.toDate;
+      blockchainRequest.landId = preRequest.landId.toString();
+      blockchainRequest.rentPrice = land.rentPrice.toString();
+      blockchainRequest.totalPrice = (land.rentPrice * 12).toString();
+      await this.client.emit(BLOCKCHAIN_PATTERNS.BLOCKCHAIN_CREATE_LAND_REQUEST,blockchainRequest).toPromise();
       return true;
     } catch (error) {
       console.error('Error accepting land request:', error);

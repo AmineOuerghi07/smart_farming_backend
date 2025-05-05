@@ -14,10 +14,8 @@ import { OAuth2Client } from 'google-auth-library';
 import { LAND_NAME } from '@app/contracts/land/land.rmq';
 import { USER_PATTERNS } from '@app/contracts/land/user.patterns';
 import { UpdateUserDto } from './dto/update.user.dto';
-import { lastValueFrom } from 'rxjs';
 import { RedisService } from '../cache/redis.cache.service';
 import { EmailService } from '@app/contracts/services/email.service';
-import { SmsService } from '@app/contracts/services/sms.service';
 
 @Injectable()
 export class IdentityService {
@@ -25,7 +23,6 @@ export class IdentityService {
     private readonly jwtService: JwtService,
     @InjectModel(User.name) private userModel: Model<User>,
     private readonly emailService : EmailService, // Assuming the email service is injected
-    private readonly smsService: SmsService, // Assuming the SMS service is injected
     @Inject(LAND_NAME)private landClient : ClientProxy,
     private cacheService : RedisService
   ) {}
@@ -79,7 +76,7 @@ export class IdentityService {
   // Login method
   async login(loginDto: LoginDto) {
     console.log('Login attempt:', loginDto);
-    const user = await this.userModel.findOne({ email: loginDto.email });
+    const user = await this.userModel.findOne({ email: {'$regex' : loginDto.email, $options: 'i'} });
     if (!user) {
       throw new RpcException('Invalid credentials');
     }
@@ -142,7 +139,6 @@ export class IdentityService {
       console.log(`Sending reset link to email: ${user.email}`);
     } else if (user.phonenumber) {
       // Send SMS (you can use an SMS service like Twilio)
-      this.smsService.sendOtp(user.phonenumber, resetToken); // Assuming the service is integrated
       console.log(`Sending reset token via SMS to: ${user.phonenumber}`);
     }
   }

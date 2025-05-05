@@ -20,6 +20,7 @@ import { AddPlantToRegionDto } from '@app/contracts/land/dtos/region-dto/add-pla
 import { AddSensorToRegionDto } from '@app/contracts/land/dtos/region-dto/add-sensor-to-region.dto';
 import { UpdatePlantDto } from '@app/contracts/land/dtos/plant-dto/update-plant.dto';
 import { firstValueFrom } from 'rxjs';
+import { CreateLandRequestDto } from '@app/contracts/land/dtos/request-dto/create-land-request.dto';
 
 type AddActivityDto = { regionId: string; description: string };
 
@@ -218,6 +219,21 @@ export class LandService {
   }
 
  
+  async createLandRequest(createLandRequestDto: CreateLandRequestDto) {
+    return await this.landClient.send<any, CreateLandRequestDto>(LAND_PATTERNS.CREATE_LAND_REQUEST, createLandRequestDto).toPromise();
+  }
+
+  async acceptLandRequest(requestId: string) {
+    return this.landClient.send(LAND_PATTERNS.ACCEPT_LAND_REQUEST, requestId).toPromise();
+  }
+
+  async rejectLandRequest(requestId: string) {
+    return this.landClient.send(LAND_PATTERNS.REJECT_LAND_REQUEST, requestId).toPromise();
+  }
+
+  async getLandRequestsByUserId(userId: string) {
+    return await this.landClient.send<any, string>(LAND_PATTERNS.GET_LAND_REQUESTS_BY_USER_ID, userId).toPromise();
+  }
  
 
 }
