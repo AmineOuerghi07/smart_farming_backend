@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UploadedFile, UseInterceptors, NotFoundException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, UploadedFile, UseInterceptors, NotFoundException, UseGuards, BadRequestException, Query } from '@nestjs/common';
 import { LandService } from './land.service';
 import { CreateLandDto } from '@app/contracts/land/dtos/land-dto/create-land.dto';
 import { UpdateLandDto } from '@app/contracts/land/dtos/land-dto/update-land.dto';
@@ -190,16 +190,6 @@ async deletePlant(@Param('id') id: string)
 
 
 
-
-
-
-
-
-
-
-
-
-  
   //------------------User EndPoint Testing ---------------------
   @Post('/user')
   async createUser(@Body()createUserDto : CreateUserDto){
@@ -282,20 +272,36 @@ async deletePlant(@Param('id') id: string)
   @Post('/region/:regionId/activity')
   async addActivityToRegion(
     @Param('regionId') regionId: string,
-    @Body('description') description: string
+    @Body('description') description: string,
+    @Body('date') date: string
   ) {
-    return this.landService.addActivity(regionId, description);
+    try {
+      console.log('Adding activity with date:', date);
+      return await this.landService.addActivity(regionId, description, date);
+    } catch (error) {
+      console.error('Error adding activity:', error);
+      throw error;
+    }
   }
-  /////
- 
-  @Put('/region/:regionId/activity/:activityId/done')
-  async setActivityDone(
+  @Delete('/region/:regionId/activity/:activityId')
+  async removeActivity(
     @Param('regionId') regionId: string,
-    @Param('activityId') activityId: string,
-    @Body('done') done: boolean
+    @Param('activityId') activityId: string
+    
   ) {
-    return this.landService.setActivityDone(regionId, activityId, done);
+    try {
+      const result = await this.landService.removeActivity(regionId, activityId);
+      if (!result) {
+        throw new NotFoundException(`Activity not found`);
+      }
+      return result;
+    } catch (error) {
+      console.error('Error removing activity:', error);
+      throw error;
+    }
   }
+ 
+ 
     //-----------------------------Sensor Endpoint Testing ---------------------------
     @Post('/sensor')
     async createSensor(@Body()createSensorDto : CreateSensorDto){
