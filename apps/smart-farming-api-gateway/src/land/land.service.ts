@@ -1,3 +1,4 @@
+
 import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { CreateLandDto } from '@app/contracts/land/dtos/land-dto/create-land.dto';
@@ -175,10 +176,16 @@ export class LandService {
       async findAllRegion() {
         return this.landClient.send(REGION_PATTERNS.FIND_ALL, {}).toPromise();
       }
-      async addActivity(regionId: string, description: string) {
-        return this.landClient.send<any, { regionId: string; description: string }>(
+      async addActivity(regionId: string, description: string, date?: string) {
+        return this.landClient.send<any, { regionId: string; description: string; date?: string }>(
           REGION_PATTERNS.ADD_ACTIVITY,
-          { regionId, description }
+          { regionId, description, date }
+        ).toPromise();
+      }
+      async removeActivity(regionId: string, activityId: string) {
+        return this.landClient.send<any, { regionId: string; activityId: string }>(
+          REGION_PATTERNS.REMOVE_ACTIVITY,
+          { regionId, activityId }
         ).toPromise();
       }
        //-------------------------------------------------
@@ -209,4 +216,8 @@ export class LandService {
       { regionId, activityId, done }
     ).toPromise();
   }
+
+ 
+ 
+
 }

@@ -121,7 +121,8 @@ async forgotPasswordOtpByEmail(@Body() req : {email : string}) {
 }
 
 @Post('forgot-password-otp-phone')
-async forgotPasswordOtpByPhone(@Body() req : {phone : string}) {
+async forgotPasswordOtpByPhone(@Body() req : {phonenumber : string}) {
+  console.log('API Gateway received phone number:', req.phonenumber);
   return this.accountService.forgotPasswordOtpByPhone(req);
 }
 

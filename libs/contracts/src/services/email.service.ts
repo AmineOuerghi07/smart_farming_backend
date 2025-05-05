@@ -10,6 +10,7 @@ export class EmailService {
   constructor() {
     console.log('📧 Initializing EmailService...');
     console.log('EMAIL_FROM:', this.EMAIL_FROM);
+  
     console.log('BREVO_API_KEY:', this.BREVO_API_KEY ? '✅ Loaded' : ' Not Loaded');
 
     // Initialisation de l'API Brevo avec la clé API

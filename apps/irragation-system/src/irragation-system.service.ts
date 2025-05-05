@@ -647,7 +647,7 @@ export class IrrigationSystemService implements OnModuleInit, OnModuleDestroy {
   }
 
   private registerDefaultDevice() {
-    const deviceId = 'irrigation_system_1';
+    const deviceId = 'simulated-pi1';
     const deviceName = 'raspberrypi';
     
     // Create standard queue names
