@@ -29,9 +29,14 @@ export class Region  {
 
   
   @Prop({
-    type: [{ description: String, done: Boolean }],
+    type: [{
+      description: String,
+      done: Boolean,
+      date: String,      // date de création
+      doneDate: String   // date de validation
+    }],
     default: [],
   })
-  activities?: { description: string; done: boolean }[];
+  activities?: { description: string; done: boolean; date?: string; doneDate?: string }[];
 }
 export const RegionSchema = SchemaFactory.createForClass(Region);

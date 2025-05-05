@@ -55,7 +55,7 @@ export class LandsService {
         .findById(landId)
         .populate({
           path: 'regions',
-          model: 'Region', // Explicitly specify model (optional)
+          model: 'Region',
           populate: {
             path: 'plants.plant',
             model: 'Plant',
@@ -67,20 +67,13 @@ export class LandsService {
         throw new Error('Land not found');
       }
 
-    //  console.log('Populated land.regions:', JSON.stringify(land.regions, null, 2));
-
       const plantMap = new Map<string, { plant: Plant; totalQuantity: number }>();
 
-      // Handle case where regions might not be populated
       const regions = Array.isArray(land.regions) ? land.regions : [];
       for (const region of regions) {
-        console.log('Region:', JSON.stringify(region, null, 2));
-        // Check if region is a populated object with plants
         const plants = Array.isArray(region.plants) ? region.plants : [];
         for (const plantEntry of plants) {
-          // Ensure plantEntry.plant is populated
           if (!plantEntry.plant || !plantEntry.plant._id) {
-            console.warn('Skipping plantEntry with no populated plant:', plantEntry);
             continue;
           }
           const plantId = plantEntry.plant._id.toString();
@@ -103,6 +96,67 @@ export class LandsService {
       throw new Error(`Failed to fetch plants for land ${landId}: ${error.message}`);
     }
   }
+
+  async getPlantsBySeason(season: string): Promise<Plant[]> {
+    try {
+      const lands = await this.landModel.find()
+        .populate({
+          path: 'regions',
+          populate: {
+            path: 'plants.plant',
+            match: { plantingSeasons: season }
+          }
+        })
+        .exec();
+
+      const plants = new Set<Plant>();
+      
+      lands.forEach(land => {
+        land.regions.forEach((region: any) => {
+          region.plants.forEach((plantEntry: any) => {
+            if (plantEntry.plant) {
+              plants.add(plantEntry.plant);
+            }
+          });
+        });
+      });
+
+      return Array.from(plants);
+    } catch (error) {
+      throw new Error(`Failed to fetch plants by season: ${error.message}`);
+    }
+  }
+
+  async getPlantsByGrowthCycle(months: number): Promise<Plant[]> {
+    try {
+      const lands = await this.landModel.find()
+        .populate({
+          path: 'regions',
+          populate: {
+            path: 'plants.plant',
+            match: { growthCycleMonths: months }
+          }
+        })
+        .exec();
+
+      const plants = new Set<Plant>();
+      
+      lands.forEach(land => {
+        land.regions.forEach((region: any) => {
+          region.plants.forEach((plantEntry: any) => {
+            if (plantEntry.plant) {
+              plants.add(plantEntry.plant);
+            }
+          });
+        });
+      });
+
+      return Array.from(plants);
+    } catch (error) {
+      throw new Error(`Failed to fetch plants by growth cycle: ${error.message}`);
+    }
+  }
+
   async setLandForRent(landId: string, userId: string, rentPrice: number): Promise<Land> {
     const land = await this.landModel.findOne({
       _id: new Types.ObjectId(landId),
