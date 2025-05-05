@@ -17,6 +17,7 @@ import { CreatePlantDto } from '@app/contracts/land/dtos/plant-dto/create-plant.
 import { UpdatePlantDto } from '@app/contracts/land/dtos/plant-dto/update-plant.dto';
 import { AddPlantToRegionDto } from '@app/contracts/land/dtos/region-dto/add-plant-to-region.dto';
 import { AddSensorToRegionDto } from '@app/contracts/land/dtos/region-dto/add-sensor-to-region.dto';
+import { CreateLandRequestDto } from '@app/contracts/land/dtos/request-dto/create-land-request.dto';
 
 
 
@@ -325,6 +326,29 @@ async deletePlant(@Param('id') id: string)
     {
       return this.landService.removeSensor(id)
     }
+
+
+
+    // ------------------------------- Land Request Endpoints -------------------------------
+  @Post('/request')
+  async createLandRequest(@Body() createLandRequestDto: CreateLandRequestDto) { // Adjust the type as needed
+    return this.landService.createLandRequest(createLandRequestDto);
+  }
+
+  @Post('/request/accept/:requestId')
+  async acceptLandRequest(@Param('requestId') requestId: string) {
+    return this.landService.acceptLandRequest(requestId);
+  }
+
+  @Post('/request/reject/:requestId')
+  async rejectLandRequest(@Param('requestId') requestId: string) {
+    return this.landService.rejectLandRequest(requestId);
+  }
+  
+  @Get('/request/user/:userId')
+  async getLandRequestsByUserId(@Param('userId') userId: string) {
+    return this.landService.getLandRequestsByUserId(userId);
+  }
 
 
 }

@@ -17,6 +17,7 @@ import { IrrigationSystemModule } from './irrigation-system/irrigation-system.mo
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { WeatherModule } from './weather/weather.module';
+import { BlockchainModule } from './blockchain/blockchain.module';
 
 
 
@@ -40,7 +41,8 @@ WeatherModule        ,
             PrometheusModule.register({
       path: '/metrics',
     }),
-            IrrigationSystemModule,],
+            IrrigationSystemModule,
+            BlockchainModule,],
 
   controllers: [SmartFarmingApiGatewayController],
   providers: [SmartFarmingApiGatewayService,
