@@ -8,7 +8,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { LAND_NAME, LAND_QUEUE } from '@app/contracts/land/land.rmq';
 import { RedisCache } from '../cache/redis.cache.module';
 import { EmailService } from '@app/contracts/services/email.service';
-import { SmsService } from '@app/contracts/services/sms.service';
 import { MailingModule } from '@app/contracts/services/mailing.module';
 
 
@@ -39,7 +38,7 @@ import { MailingModule } from '@app/contracts/services/mailing.module';
    
   ],
   controllers: [IdentityController],
-  providers: [IdentityService, EmailService, SmsService,
+  providers: [IdentityService, EmailService,
     
   ],
   exports: [IdentityService]

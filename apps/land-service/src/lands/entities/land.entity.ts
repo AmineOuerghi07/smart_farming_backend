@@ -27,6 +27,15 @@ export class Land extends Document {
 
   @Prop([{ type: Types.ObjectId, ref: 'Region' }])
   regions:  Region[];
+
+  @Prop({ type: Types.ObjectId, ref: 'User', required: false })
+  rentingUser: Types.ObjectId | User;
+
+  @Prop({ required: false, default: false })
+  fromDate : string; 
+
+  @Prop({ required: false, default: false })
+  toDate : string;
 }
 
 export const LandSchema = SchemaFactory.createForClass(Land);

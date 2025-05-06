@@ -5,4 +5,6 @@ export const PLANT_PATTERNS =
     CREATE : 'plant.create',
     UPDATE : 'plant.update',
     REMOVE : 'plant.remove',
+    FIND_BY_SEASON : 'plant.findBySeason',
+    FIND_BY_CYCLE : 'plant.findByCycle'
 }

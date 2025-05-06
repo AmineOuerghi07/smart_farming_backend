@@ -131,6 +131,24 @@ services:
     restart: unless-stopped
   
 
+  blockchain-service:
+    image: amineouerghi07/blockchain-service:1.0
+    container_name: blockchainService
+    build: 
+      context: ./
+      dockerfile: ./apps/blockchain/Dockerfile
+      target: dev
+    init: true
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    networks:
+      - smart-farming-backend
+    restart: unless-stopped
+
+
+
 
 
 

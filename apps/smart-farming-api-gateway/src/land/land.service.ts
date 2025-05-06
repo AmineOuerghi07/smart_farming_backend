@@ -1,3 +1,4 @@
+
 import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { CreateLandDto } from '@app/contracts/land/dtos/land-dto/create-land.dto';
@@ -19,6 +20,7 @@ import { AddPlantToRegionDto } from '@app/contracts/land/dtos/region-dto/add-pla
 import { AddSensorToRegionDto } from '@app/contracts/land/dtos/region-dto/add-sensor-to-region.dto';
 import { UpdatePlantDto } from '@app/contracts/land/dtos/plant-dto/update-plant.dto';
 import { firstValueFrom } from 'rxjs';
+import { CreateLandRequestDto } from '@app/contracts/land/dtos/request-dto/create-land-request.dto';
 
 type AddActivityDto = { regionId: string; description: string };
 
@@ -175,10 +177,16 @@ export class LandService {
       async findAllRegion() {
         return this.landClient.send(REGION_PATTERNS.FIND_ALL, {}).toPromise();
       }
-      async addActivity(regionId: string, description: string) {
-        return this.landClient.send<any, { regionId: string; description: string }>(
+      async addActivity(regionId: string, description: string, date?: string) {
+        return this.landClient.send<any, { regionId: string; description: string; date?: string }>(
           REGION_PATTERNS.ADD_ACTIVITY,
-          { regionId, description }
+          { regionId, description, date }
+        ).toPromise();
+      }
+      async removeActivity(regionId: string, activityId: string) {
+        return this.landClient.send<any, { regionId: string; activityId: string }>(
+          REGION_PATTERNS.REMOVE_ACTIVITY,
+          { regionId, activityId }
         ).toPromise();
       }
        //-------------------------------------------------
@@ -209,4 +217,23 @@ export class LandService {
       { regionId, activityId, done }
     ).toPromise();
   }
+
+ 
+  async createLandRequest(createLandRequestDto: CreateLandRequestDto) {
+    return await this.landClient.send<any, CreateLandRequestDto>(LAND_PATTERNS.CREATE_LAND_REQUEST, createLandRequestDto).toPromise();
+  }
+
+  async acceptLandRequest(requestId: string) {
+    return this.landClient.send(LAND_PATTERNS.ACCEPT_LAND_REQUEST, requestId).toPromise();
+  }
+
+  async rejectLandRequest(requestId: string) {
+    return this.landClient.send(LAND_PATTERNS.REJECT_LAND_REQUEST, requestId).toPromise();
+  }
+
+  async getLandRequestsByUserId(userId: string) {
+    return await this.landClient.send<any, string>(LAND_PATTERNS.GET_LAND_REQUESTS_BY_USER_ID, userId).toPromise();
+  }
+ 
+
 }
