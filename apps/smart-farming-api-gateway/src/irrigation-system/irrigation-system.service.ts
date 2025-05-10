@@ -20,14 +20,96 @@ export class IrrigationSystemService {
   }
 
   async getSystemStatus() {
-    return lastValueFrom(
-      this.client.send(IRRIGATION_PATTERNS.GET_SYSTEM_STATUS, {}).pipe(
-        timeout(5000),
-        catchError(error => {
-          throw new Error(`Failed to get system status: ${error.message}`);
-        })
-      )
-    );
+    try {
+      console.log('Requesting system status...');
+      
+      const response = await lastValueFrom(
+        this.client.send(IRRIGATION_PATTERNS.GET_SYSTEM_STATUS, {}).pipe(
+          timeout(5000),
+          catchError(error => {
+            console.error('Error getting system status:', error);
+            throw new Error(`Failed to get system status: ${error.message}`);
+          })
+        )
+      );
+      
+      console.log('Received raw system status response:', JSON.stringify(response));
+      
+      // Convert the entire response to a string and search for humidity patterns
+      const responseStr = JSON.stringify(response);
+      console.log('Searching for humidity in raw response string');
+      
+      // Extract humidity using regex from the raw response string
+      const humidityRegex = /"humidity"\s*:\s*([0-9.]+)/;
+      const humidityMatch = responseStr.match(humidityRegex);
+      let extractedHumidity = null;
+      
+      if (humidityMatch && humidityMatch[1]) {
+        extractedHumidity = parseFloat(humidityMatch[1]);
+        console.log(`Successfully extracted humidity from raw response: ${extractedHumidity}`);
+      }
+      
+      // Parse the response to ensure temperature is properly extracted
+      const data = response.data || response;
+      
+      // Log the temperature and humidity specifically
+      if (data) {
+        console.log('Temperature from response:', data.temperature);
+        console.log('Humidity from response:', data.humidity);
+        
+        if (data.status) {
+          console.log('Temperature from status:', data.status.temperature);
+          console.log('Humidity from status:', data.status.humidity);
+        }
+      }
+      
+      // Check if we need to normalize the response to include temperature and humidity
+      if (data) {
+        // First handle temperature
+        if ((!data.temperature || data.temperature === 0) && 
+            data.status && data.status.temperature && data.status.temperature > 0) {
+          console.log('Normalizing response to include temperature from status');
+          data.temperature = data.status.temperature;
+        }
+
+        // Now handle humidity - ensure humidity is always included
+        if (!data.humidity || data.humidity === 0) {
+          // Try to get humidity from status
+          if (data.status && data.status.humidity) {
+            console.log('Adding humidity from status:', data.status.humidity);
+            data.humidity = data.status.humidity;
+          } 
+          // If extracted from raw response, use that
+          else if (extractedHumidity) {
+            console.log(`Setting humidity from extracted value: ${extractedHumidity}`);
+            data.humidity = extractedHumidity;
+            // Also add to status object if it exists
+            if (data.status) {
+              data.status.humidity = extractedHumidity;
+            }
+          }
+        }
+        
+        // Now ensure status has humidity
+        if (data.status && (!data.status.humidity || data.status.humidity === 0)) {
+          if (data.humidity) {
+            console.log('Adding humidity to status object:', data.humidity);
+            data.status.humidity = data.humidity;
+          } else if (extractedHumidity) {
+            console.log(`Setting status.humidity from extracted value: ${extractedHumidity}`);
+            data.status.humidity = extractedHumidity;
+          }
+        }
+      }
+      
+      console.log('Processed system status response:', JSON.stringify(data));
+      
+      // Return the processed response
+      return response;
+    } catch (error) {
+      console.error('Error in getSystemStatus:', error);
+      throw new Error(`Failed to get system status: ${error.message}`);
+    }
   }
 
   async setPumpState(state: boolean) {
@@ -35,7 +117,7 @@ export class IrrigationSystemService {
       console.log('Attempting to set pump state:', state);
       
       const command = { 
-        target_id: 'irrigation_system_1',
+        target_id: 'simulated-pi1',
         pump_control: state ? 'ON' : 'OFF',
         mode: state ? 'MANUAL' : undefined,
         force_manual_mode: state ? true : false,
@@ -163,7 +245,7 @@ export class IrrigationSystemService {
       console.log('Setting ventilator state:', state);
       
       const command = { 
-        target_id: 'irrigation_system_1',
+        target_id: 'simulated-pi1',
         ventilator_control: state ? 'ON' : 'OFF',
         timestamp: Date.now() / 1000
       };
@@ -187,19 +269,55 @@ export class IrrigationSystemService {
 
   async getVentilatorStatus() {
     try {
+      console.log('Getting ventilator status...');
+      
       // First get the system status which includes ventilator info
       const statusResponse = await this.getSystemStatus();
+      
+      console.log('Using system status for ventilator:', JSON.stringify(statusResponse));
       
       // Extract ventilator-specific information
       const data = statusResponse.data || statusResponse;
       
+      const ventilatorOn = 
+        data?.ventilator_on !== undefined ? data.ventilator_on :
+        data?.status?.ventilator_on !== undefined ? data.status.ventilator_on :
+        data?.data?.ventilator_on !== undefined ? data.data.ventilator_on :
+        false;
+        
+      const ventilatorAuto = 
+        data?.ventilator_auto !== undefined ? data.ventilator_auto :
+        data?.status?.ventilator_auto !== undefined ? data.status.ventilator_auto :
+        data?.data?.ventilator_auto !== undefined ? data.data.ventilator_auto :
+        true;
+        
+      const ventilatorCycling = 
+        data?.ventilator_cycling !== undefined ? data.ventilator_cycling :
+        data?.status?.ventilator_cycling !== undefined ? data.status.ventilator_cycling :
+        data?.data?.ventilator_cycling !== undefined ? data.data.ventilator_cycling :
+        false;
+        
+      const temperature = 
+        data?.status?.temperature !== undefined ? data.status.temperature :
+        data?.temperature !== undefined ? data.temperature :
+        data?.data?.temperature !== undefined ? data.data.temperature :
+        data?.data?.status?.temperature !== undefined ? data.data.status.temperature :
+        null;
+        
+      console.log('Extracted ventilator data:', {
+        ventilatorOn,
+        ventilatorAuto,
+        ventilatorCycling,
+        temperature
+      });
+      
       return {
         success: true,
         data: {
-          ventilator_on: data.ventilator_on || false,
-          ventilator_auto: data.ventilator_auto || false,
-          ventilator_cycling: data.ventilator_cycling || false,
-          temperature: data.status?.temperature || data.temperature,
+          ventilator_on: ventilatorOn,
+          ventilator_auto: ventilatorAuto,
+          ventilator_cycling: ventilatorCycling,
+          temperature: temperature,
           timestamp: Date.now() / 1000
         }
       };
@@ -214,7 +332,7 @@ export class IrrigationSystemService {
       console.log('Setting LED state:', state);
       
       const command = { 
-        target_id: 'irrigation_system_1',
+        target_id: 'simulated-pi1',
         led_control: state ? 'ON' : 'OFF',
         timestamp: Date.now() / 1000
       };
@@ -238,17 +356,38 @@ export class IrrigationSystemService {
 
   async getLightStatus() {
     try {
+      console.log('Getting light sensor status...');
+      
       // First get the system status which includes light sensor info
       const statusResponse = await this.getSystemStatus();
+      
+      console.log('Using system status for light sensor:', JSON.stringify(statusResponse));
       
       // Extract light-specific information
       const data = statusResponse.data || statusResponse;
       
+      const lightDetected = 
+        data?.light_detected !== undefined ? data.light_detected :
+        data?.status?.light_detected !== undefined ? data.status.light_detected :
+        data?.data?.light_detected !== undefined ? data.data.light_detected :
+        false;
+        
+      const ledActive = 
+        data?.led_active !== undefined ? data.led_active :
+        data?.status?.led_active !== undefined ? data.status.led_active :
+        data?.data?.led_active !== undefined ? data.data.led_active :
+        false;
+        
+      console.log('Extracted light sensor data:', {
+        lightDetected,
+        ledActive
+      });
+      
       return {
         success: true,
         data: {
-          light_detected: data.light_detected || false,
-          led_active: data.led_active || false,
+          light_detected: lightDetected,
+          led_active: ledActive,
           timestamp: Date.now() / 1000,
           note: "LED uses inverted logic: ON when dark, OFF when light detected"
         }
