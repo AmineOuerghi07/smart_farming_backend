@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId, Types } from 'mongoose';
 import { CreateLandDto } from './dto/create-land.dto';
@@ -8,51 +8,132 @@ import { Plant } from '../plants/entities/plant.entity';
 import { LandRequest } from './entities/requests.entity';
 import { CreateLandRequestDto } from './dto/create-land-request.dto';
 import { BLOCKCHAIN_NAME } from '@app/contracts/blockchain/blockchain.rmq';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { BLOCKCHAIN_PATTERNS } from '@app/contracts/blockchain/blockchain.patterns';
 import { BlockchainDto } from '@app/contracts/blockchain/dto/blockchain.dto';
+import { RpcInternalServerErrorException, RpcNoDataException } from '@app/contracts/errors/filters/rpc.exception.filter';
+
 
 @Injectable()
 export class LandsService {
-  constructor(@InjectModel(Land.name) private landModel: Model<Land>, @InjectModel(LandRequest.name) private landRequestModel, @Inject(BLOCKCHAIN_NAME) private readonly client : ClientProxy) { }
+  constructor(
+    @InjectModel(Land.name) private landModel: Model<Land>, 
+    @InjectModel(LandRequest.name) private landRequestModel, 
+    @Inject(BLOCKCHAIN_NAME) private readonly client: ClientProxy
+  ) {}
 
   async create(createLandDto: CreateLandDto): Promise<Land> {
-    const createdLand = new this.landModel({
-      ...createLandDto,
-      user: createLandDto.user, // Convert to ObjectId automatically
-      regions: []
-    });
-    return createdLand.save();
-  }
-
-  async findAll(): Promise<Land[] | string> {
-    const lands = await this.landModel.find({}).exec();
-
-    // Check if no lands are found
-    if (lands.length === 0) {
-      return 'Nothing in the database'; // Custom message when no data is available
+    try {
+      const createdLand = new this.landModel({
+        ...createLandDto,
+        user: createLandDto.user,
+        regions: []
+      });
+      return await createdLand.save();
+    } catch (error) {
+      throw new RpcException({
+        message: `Failed to create land: ${error.message}`,
+        statusCode: 400
+      });
     }
-
-    return lands;
   }
 
+  async findAll(): Promise<Land[] | { message: string }> {
+    try {
+      const lands = await this.landModel.find({}).exec();
+      
+      if (lands.length === 0) {
+        // Use our custom RpcNoDataException for no data scenarios
+        throw new RpcNoDataException('No lands found in the database');
+      }
+      
+      return lands;
+    } catch (error) {
+      // Preserve our custom exceptions
+      if (error instanceof RpcNoDataException) {
+        throw error;
+      }
+      
+      throw new RpcInternalServerErrorException(`Failed to fetch lands: ${error.message}`);
+    }
+  }
 
   async findOne(id: ObjectId): Promise<Land> {
-    return this.landModel.findById(id)
-      .populate('user')
-      .exec();
+    try {
+      const land = await this.landModel.findById(id)
+        .populate('user')
+        .exec();
+      
+      if (!land) {
+        throw new RpcException({
+          message: `Land with ID ${id} not found`,
+          statusCode: 404
+        });
+      }
+      
+      return land;
+    } catch (error) {
+      if (error instanceof RpcException) {
+        throw error;
+      }
+      
+      throw new RpcException({
+        message: `Failed to fetch land: ${error.message}`,
+        statusCode: error.name === 'CastError' ? 400 : 500
+      });
+    }
   }
 
   async update(id: ObjectId, updateLandDto: UpdateLandDto): Promise<Land> {
-    return this.landModel.findByIdAndUpdate(
-      id,
-      updateLandDto,
-      { new: true }
-    ).populate('user regions').exec();
+    try {
+      const updatedLand = await this.landModel.findByIdAndUpdate(
+        id,
+        updateLandDto,
+        { new: true }
+      ).populate('user regions').exec();
+      
+      if (!updatedLand) {
+        throw new RpcException({
+          message: `Land with ID ${id} not found`,
+          statusCode: 404
+        });
+      }
+      
+      return updatedLand;
+    } catch (error) {
+      if (error instanceof RpcException) {
+        throw error;
+      }
+      
+      throw new RpcException({
+        message: `Failed to update land: ${error.message}`,
+        statusCode: error.name === 'CastError' ? 400 : 500
+      });
+    }
   }
 
   async remove(id: ObjectId): Promise<Land> {
-    return this.landModel.findByIdAndDelete(id).exec();
+    try {
+      const deletedLand = await this.landModel.findByIdAndDelete(id).exec();
+      
+      if (!deletedLand) {
+        throw new RpcException({
+          message: `Land with ID ${id} not found`,
+          statusCode: 404
+        });
+      }
+      
+      return deletedLand;
+    } catch (error) {
+      if (error instanceof RpcException) {
+        throw error;
+      }
+      
+      throw new RpcException({
+        message: `Failed to delete land: ${error.message}`,
+        statusCode: error.name === 'CastError' ? 400 : 500
+      });
+    }
   }
 
   async getPlantsByLandId(landId: ObjectId): Promise<{ plant: Plant; totalQuantity: number }[]> {
@@ -70,7 +151,10 @@ export class LandsService {
         .exec();
 
       if (!land) {
-        throw new Error('Land not found');
+        throw new RpcException({
+          message: `Land with ID ${landId} not found`,
+          statusCode: 404
+        });
       }
 
       const plantMap = new Map<string, { plant: Plant; totalQuantity: number }>();
@@ -99,88 +183,41 @@ export class LandsService {
 
       return Array.from(plantMap.values());
     } catch (error) {
-      throw new Error(`Failed to fetch plants for land ${landId}: ${error.message}`);
-    }
-  }
-
-  async getPlantsBySeason(season: string): Promise<Plant[]> {
-    try {
-      const lands = await this.landModel.find()
-        .populate({
-          path: 'regions',
-          populate: {
-            path: 'plants.plant',
-            match: { plantingSeasons: season }
-          }
-        })
-        .exec();
-
-      const plants = new Set<Plant>();
+      if (error instanceof RpcException) {
+        throw error;
+      }
       
-      lands.forEach(land => {
-        land.regions.forEach((region: any) => {
-          region.plants.forEach((plantEntry: any) => {
-            if (plantEntry.plant) {
-              plants.add(plantEntry.plant);
-            }
-          });
-        });
+      throw new RpcException({
+        message: `Failed to fetch plants for land ${landId}: ${error.message}`,
+        statusCode: error.name === 'CastError' ? 400 : 500
       });
-
-      return Array.from(plants);
-    } catch (error) {
-      throw new Error(`Failed to fetch plants by season: ${error.message}`);
     }
   }
 
-  async getPlantsByGrowthCycle(months: number): Promise<Plant[]> {
+  async findLandsByUserId(userId: string): Promise<Land[]> {
     try {
-      const lands = await this.landModel.find()
-        .populate({
-          path: 'regions',
-          populate: {
-            path: 'plants.plant',
-            match: { growthCycleMonths: months }
-          }
-        })
-        .exec();
+      const lands = await this.landModel.find({ user: userId }).exec();
 
-      const plants = new Set<Plant>();
-      
-      lands.forEach(land => {
-        land.regions.forEach((region: any) => {
-          region.plants.forEach((plantEntry: any) => {
-            if (plantEntry.plant) {
-              plants.add(plantEntry.plant);
-            }
-          });
+      if (lands.length === 0) {
+        throw new RpcException({
+          message: `No lands found for user with ID ${userId}`,
+          statusCode: 404
         });
-      });
+      }
 
-      return Array.from(plants);
+      return lands;
     } catch (error) {
-      throw new Error(`Failed to fetch plants by growth cycle: ${error.message}`);
+      if (error instanceof RpcException) {
+        throw error;
+      }
+      
+      throw new RpcException({
+        message: `Failed to fetch lands for user ${userId}: ${error.message}`,
+        statusCode: error.name === 'CastError' ? 400 : 500
+      });
     }
   }
 
-  async setLandForRent(landId: string, userId: string, rentPrice: number): Promise<Land> {
-    const land = await this.landModel.findOne({
-      _id: new Types.ObjectId(landId),
-      user: new Types.ObjectId(userId), // Ensure the user owns the land
-    }).exec();
-
-    if (!land) {
-      throw new NotFoundException(`Land with ID ${landId} not found or not owned by user ${userId}`);
-    }
-
-    // If rentPrice > 0, set forRent to true; if 0, set forRent to false
-    land.forRent = rentPrice > 0;
-    land.rentPrice = rentPrice;
-
-    return land.save();
-  }
-
-  // New method: Fetch all lands for rent
   async findLandsForRent(): Promise<Land[]> {
     try {
       console.log('Fetching lands for rent...');
@@ -188,102 +225,259 @@ export class LandsService {
         .find({ forRent: true })
         .populate('user regions')
         .exec();
+      
+      if (lands.length === 0) {
+        throw new RpcException({
+          message: 'No lands available for rent',
+          statusCode: 404
+        });
+      }
+      
       console.log(`Found ${lands.length} lands for rent`);
       return lands;
     } catch (error) {
+      if (error instanceof RpcException) {
+        throw error;
+      }
+      
       console.error(`Error in findLandsForRent: ${error.message}`);
-      throw error;
+      throw new RpcException({
+        message: `Failed to fetch lands for rent: ${error.message}`,
+        statusCode: 500
+      });
     }
   }
-  async findLandsByUserId(userId: string): Promise<Land[]> {
-    const lands = await this.landModel.find({ user: userId }).exec();
 
-    if (lands.length === 0) {
-      throw new NotFoundException(`No lands found for user with ID ${userId}`);
-    }
-
-    return lands;
-  }
-
-
-  async getLandRequestsByUserId(userId: string): Promise<LandRequest[]> {
-    const lands = await this.landModel.find({ user: userId }).exec();
-    const requests = await this.landRequestModel.find().exec();
-    const filterdRequests = requests.filter((request) => {
-      const land = lands.find((land) => land._id.toString() === request.landId.toString());
-      return land != null;
-    });
-    return filterdRequests;
-  }
-
-  async addRequestToLand(createLandRequestDto: CreateLandRequestDto): Promise<boolean> {
-    // Checking if the user already has a request for this land
-    const existingRequest = await this.landRequestModel.findOne({ landId: createLandRequestDto.landId, requestingUser: createLandRequestDto.requestingUser }).exec();
-    if (existingRequest) {
-      return false;
-    }
+  async setLandForRent(landId: string, userId: string, rentPrice: number): Promise<Land> {
     try {
+      const land = await this.landModel.findOne({
+        _id: new Types.ObjectId(landId),
+        user: new Types.ObjectId(userId),
+      }).exec();
+
+      if (!land) {
+        throw new RpcException({
+          message: `Land with ID ${landId} not found or not owned by user ${userId}`,
+          statusCode: 404
+        });
+      }
+
+      land.forRent = rentPrice > 0;
+      land.rentPrice = rentPrice;
+
+      return await land.save();
+    } catch (error) {
+      if (error instanceof RpcException) {
+        throw error;
+      }
+      
+      throw new RpcException({
+        message: `Failed to set land for rent: ${error.message}`,
+        statusCode: error.name === 'CastError' ? 400 : 500
+      });
+    }
+  }
+
+  // Updated methods for land requests
+  async getLandRequestsByUserId(userId: string): Promise<LandRequest[]> {
+    try {
+      const lands = await this.landModel.find({ user: userId }).exec();
+      
+      if (lands.length === 0) {
+        throw new RpcException({
+          message: `No lands found for user with ID ${userId}`,
+          statusCode: 404
+        });
+      }
+      
+      const requests = await this.landRequestModel.find().exec();
+      const filteredRequests = requests.filter((request) => {
+        const land = lands.find((land) => land._id.toString() === request.landId.toString());
+        return land != null;
+      });
+      
+      if (filteredRequests.length === 0) {
+        throw new RpcException({
+          message: `No land requests found for user with ID ${userId}`,
+          statusCode: 404
+        });
+      }
+      
+      return filteredRequests;
+    } catch (error) {
+      if (error instanceof RpcException) {
+        throw error;
+      }
+      
+      throw new RpcException({
+        message: `Failed to fetch land requests: ${error.message}`,
+        statusCode: error.name === 'CastError' ? 400 : 500
+      });
+    }
+  }
+
+  async addRequestToLand(createLandRequestDto: CreateLandRequestDto): Promise<{ success: boolean; message: string }> {
+    try {
+      // Check if the land exists
+      const land = await this.landModel.findById(createLandRequestDto.landId).exec();
+      if (!land) {
+        throw new RpcException({
+          message: `Land with ID ${createLandRequestDto.landId} not found`,
+          statusCode: 404
+        });
+      }
+      
+      // Check if the land is available for rent
+      if (!land.forRent) {
+        throw new RpcException({
+          message: `Land with ID ${createLandRequestDto.landId} is not available for rent`,
+          statusCode: 400
+        });
+      }
+      
+      // Checking if the user already has a request for this land
+      const existingRequest = await this.landRequestModel.findOne({ 
+        landId: createLandRequestDto.landId, 
+        requestingUser: createLandRequestDto.requestingUser 
+      }).exec();
+      
+      if (existingRequest) {
+        throw new RpcException({
+          message: 'You already have a pending request for this land',
+          statusCode: 400
+        });
+      }
+      
       // Create a new request
-      let landRequest = new LandRequest();
+      let landRequest = new this.landRequestModel();
       landRequest.requestingUser = new Types.ObjectId(createLandRequestDto.requestingUser);
       landRequest.landId = new Types.ObjectId(createLandRequestDto.landId);
       landRequest.requestDate = new Date().toString();
-      landRequest.status = 'pending'; // Default status
+      landRequest.status = 'pending';
+      
       console.log('Creating new land request:', landRequest);
-      const newRequest = await this.landRequestModel.create(landRequest).exec();
-      console.log('New request created:', newRequest);
-      return true;
+      await landRequest.save();
+      
+      return { 
+        success: true, 
+        message: 'Land request created successfully' 
+      };
     } catch (error) {
+      if (error instanceof RpcException) {
+        throw error;
+      }
+      
       console.error('Error creating land request:', error);
-      throw new Error('Failed to create land request');
+      throw new RpcException({
+        message: `Failed to create land request: ${error.message}`,
+        statusCode: error.name === 'CastError' ? 400 : 500
+      });
     }
   }
 
-  async acceptRequest(requestId: string): Promise<boolean> {
+  async acceptRequest(requestId: string): Promise<{ success: boolean; message: string }> {
     try {
-
-      const preRequest: LandRequest = await this.landRequestModel.findById({ _id: requestId }).exec();
-      if (preRequest.status != "pending") {
-        return false;
+      const preRequest = await this.landRequestModel.findById(requestId).exec();
+      
+      if (!preRequest) {
+        throw new RpcException({
+          message: `Request with ID ${requestId} not found`,
+          statusCode: 404
+        });
       }
-      const request = await this.landRequestModel.findByIdAndUpdate({ _id: requestId }, { status: 'accepted' }).exec();
-      if (!request) {
-        throw new NotFoundException(`Request with ID ${requestId} not found`);
+      
+      if (preRequest.status !== "pending") {
+        throw new RpcException({
+          message: `Request with ID ${requestId} is not in pending status`,
+          statusCode: 400
+        });
       }
-      const land = await this.landModel.findById({ _id: preRequest.landId }).exec();
+      
+      await this.landRequestModel.findByIdAndUpdate(
+        requestId, 
+        { status: 'accepted' }
+      ).exec();
+      
+      const land = await this.landModel.findById(preRequest.landId).exec();
+      
+      if (!land) {
+        throw new RpcException({
+          message: `Land with ID ${preRequest.landId} not found`,
+          statusCode: 404
+        });
+      }
+      
       land.fromDate = new Date(Date.now()).toLocaleString();
-      land.toDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toLocaleString(); // Set to one year from now
+      land.toDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toLocaleString();
       land.rentingUser = preRequest.requestingUser;
-      await this.landModel.findByIdAndUpdate({ _id: preRequest.landId }, land).exec();
-      let blockchainRequest = new BlockchainDto()
-      blockchainRequest.requestingUser = preRequest.requestingUser.toString();
-      blockchainRequest.fromDate = land.fromDate;
-      blockchainRequest.toDate = land.toDate;
-      blockchainRequest.landId = preRequest.landId.toString();
-      blockchainRequest.rentPrice = land.rentPrice.toString();
-      blockchainRequest.totalPrice = (land.rentPrice * 12).toString();
-      await this.client.emit(BLOCKCHAIN_PATTERNS.BLOCKCHAIN_CREATE_LAND_REQUEST,blockchainRequest).toPromise();
-      return true;
+      
+      await this.landModel.findByIdAndUpdate(preRequest.landId, land).exec();
+      
+      let blockchainRequest = {
+        requestingUser: preRequest.requestingUser.toString(),
+        fromDate: land.fromDate,
+        toDate: land.toDate,
+        landId: preRequest.landId.toString(),
+        rentPrice: land.rentPrice.toString(),
+        totalPrice: (land.rentPrice * 12).toString()
+      };
+      
+      await this.client.emit(BLOCKCHAIN_PATTERNS.BLOCKCHAIN_CREATE_LAND_REQUEST, blockchainRequest).toPromise();
+      
+      return { 
+        success: true, 
+        message: 'Land request accepted successfully' 
+      };
     } catch (error) {
+      if (error instanceof RpcException) {
+        throw error;
+      }
+      
       console.error('Error accepting land request:', error);
-      throw new Error('Failed to accept land request');
+      throw new RpcException({
+        message: `Failed to accept land request: ${error.message}`,
+        statusCode: error.name === 'CastError' ? 400 : 500
+      });
     }
   }
 
-  async rejectRequest(requestId: string): Promise<boolean> {
+  async rejectRequest(requestId: string): Promise<{ success: boolean; message: string }> {
     try {
-      const preRequest: LandRequest = await this.landRequestModel.findById({ _id: requestId }).exec();
-      if (preRequest.status != "pending") {
-        return false;
+      const preRequest = await this.landRequestModel.findById(requestId).exec();
+      
+      if (!preRequest) {
+        throw new RpcException({
+          message: `Request with ID ${requestId} not found`,
+          statusCode: 404
+        });
       }
-      const request = await this.landRequestModel.findByIdAndUpdate({ _id: requestId }, { status: 'rejected' }).exec();
-      if (!request) {
-        throw new NotFoundException(`Request with ID ${requestId} not found`);
+      
+      if (preRequest.status !== "pending") {
+        throw new RpcException({
+          message: `Request with ID ${requestId} is not in pending status`,
+          statusCode: 400
+        });
       }
-      return true;
+      
+      await this.landRequestModel.findByIdAndUpdate(
+        requestId, 
+        { status: 'rejected' }
+      ).exec();
+      
+      return { 
+        success: true, 
+        message: 'Land request rejected successfully' 
+      };
     } catch (error) {
+      if (error instanceof RpcException) {
+        throw error;
+      }
+      
       console.error('Error rejecting land request:', error);
-      throw new Error('Failed to reject land request');
+      throw new RpcException({
+        message: `Failed to reject land request: ${error.message}`,
+        statusCode: error.name === 'CastError' ? 400 : 500
+      });
     }
   }
 }
