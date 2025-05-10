@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UploadedFile, UseInterceptors, NotFoundException, UseGuards, BadRequestException, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, UploadedFile, UseInterceptors, NotFoundException, UseGuards, BadRequestException, Query, InternalServerErrorException } from '@nestjs/common';
 import { LandService } from './land.service';
 import { CreateLandDto } from '@app/contracts/land/dtos/land-dto/create-land.dto';
 import { UpdateLandDto } from '@app/contracts/land/dtos/land-dto/update-land.dto';
@@ -18,6 +18,7 @@ import { UpdatePlantDto } from '@app/contracts/land/dtos/plant-dto/update-plant.
 import { AddPlantToRegionDto } from '@app/contracts/land/dtos/region-dto/add-plant-to-region.dto';
 import { AddSensorToRegionDto } from '@app/contracts/land/dtos/region-dto/add-sensor-to-region.dto';
 import { CreateLandRequestDto } from '@app/contracts/land/dtos/request-dto/create-land-request.dto';
+import { RpcNoDataException } from '@app/contracts/errors/filters/rpc.exception.filter';
 
 
 
@@ -61,7 +62,15 @@ export class LandController {
   }
   @Get('all')
   async findAllLands() {
-    return this.landService.findAllLands();
+    try {
+      return await this.landService.findAllLands();
+    } catch (error) {
+      // Handle specific error types
+      if (error instanceof RpcNoDataException) {
+        throw new NotFoundException(error.message);
+      }
+      throw new InternalServerErrorException('Failed to fetch lands');
+    }
   }
 
   @Get('land/:id')
