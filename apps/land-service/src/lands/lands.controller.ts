@@ -5,6 +5,8 @@ import { CreateLandDto } from './dto/create-land.dto';
 import { UpdateLandDto } from './dto/update-land.dto';
 import { LAND_PATTERNS } from '@app/contracts/land/land.patterns';
 import { ObjectId } from 'mongoose';
+import { create } from 'domain';
+import { CreateLandRequestDto } from './dto/create-land-request.dto';
 
 @Controller()
 export class LandsController {
@@ -51,5 +53,23 @@ export class LandsController {
   @MessagePattern(LAND_PATTERNS.FIND_LAND_FOR_RENT)
   async findLandForRent()  {
     return this.landsService.findLandsForRent();
+  }
+
+
+  @MessagePattern(LAND_PATTERNS.CREATE_LAND_REQUEST)
+  async createLandRequest(@Payload() createLandRequestDto: CreateLandRequestDto ) {
+    return this.landsService.addRequestToLand(createLandRequestDto);
+  }
+  @MessagePattern(LAND_PATTERNS.ACCEPT_LAND_REQUEST)
+  async acceptLandRequest(@Payload() requestId: string) {
+    return this.landsService.acceptRequest(requestId);
+  }
+  @MessagePattern(LAND_PATTERNS.REJECT_LAND_REQUEST)
+  async rejectLandRequest(@Payload() requestId : string) {
+    return this.landsService.rejectRequest(requestId);
+  }
+  @MessagePattern(LAND_PATTERNS.GET_LAND_REQUESTS_BY_USER_ID)
+  async getLandRequestsByUserId(@Payload() userId: string) {
+    return this.landsService.getLandRequestsByUserId(userId);
   }
 }
