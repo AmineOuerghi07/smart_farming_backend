@@ -29,7 +29,7 @@ services:
       - rabbitmq
     environment:
       - DATABASE_URL=mongodb://mongo:27017/farm
-      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - RABBITMQ_URL=amqp://rabbitmq:5673
     networks:
       - smart-farming-backend
     restart: unless-stopped
@@ -49,7 +49,7 @@ services:
       - rabbitmq
     environment:
       - DATABASE_URL=mongodb://mongo:27017/facture
-      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - RABBITMQ_URL=amqp://rabbitmq:5673
     networks:
       - smart-farming-backend
     restart: unless-stopped
@@ -68,7 +68,7 @@ services:
       - rabbitmq
     environment:
       - DATABASE_URL=mongodb://mongo:27017/land-service
-      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - RABBITMQ_URL=amqp://rabbitmq:5673
     networks:
       - smart-farming-backend
     restart: unless-stopped
@@ -87,7 +87,7 @@ services:
       - rabbitmq
     environment:
       - DATABASE_URL=mongodb://mongo:27017/order
-      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - RABBITMQ_URL=amqp://rabbitmq:5673
     networks:
       - smart-farming-backend
     restart: unless-stopped
@@ -106,7 +106,7 @@ services:
       - rabbitmq
     environment:
       - DATABASE_URL=mongodb://mongo:27017/product
-      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - RABBITMQ_URL=amqp://rabbitmq:5673
     networks:
       - smart-farming-backend
     restart: unless-stopped
@@ -125,7 +125,7 @@ services:
       - rabbitmq
     environment:
       - DATABASE_URL=mongodb://mongo:27017/sensor-service
-      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - RABBITMQ_URL=amqp://rabbitmq:5673
     networks:
       - smart-farming-backend
     restart: unless-stopped
@@ -142,7 +142,7 @@ services:
     depends_on:
       - rabbitmq
     environment:
-      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - RABBITMQ_URL=amqp://rabbitmq:5673
     networks:
       - smart-farming-backend
     restart: unless-stopped
@@ -175,7 +175,7 @@ services:
       - redis
       - prometheus
     environment:
-      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - RABBITMQ_URL=amqp://rabbitmq:5673
     networks:
       - smart-farming-backend
     volumes:
@@ -187,9 +187,11 @@ services:
     container_name: rabbitmq
     ports:
       - "15692:15692"
-      - "5672:5672"
+      - "5673:5673"
     networks:
       - smart-farming-backend
+    environment:
+      - RABBITMQ_NODE_PORT=5673
     restart: always
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq  
