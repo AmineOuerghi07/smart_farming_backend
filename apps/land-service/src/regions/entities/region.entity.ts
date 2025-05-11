@@ -9,6 +9,8 @@ export class Region  {
   name: string;
   @Prop()
   surface: number;
+  @Prop()
+  description: string;
   @Prop({ type: 'ObjectId', ref: 'Land' })
   land: Land;
 
