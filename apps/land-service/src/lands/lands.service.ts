@@ -410,6 +410,7 @@ export class LandsService {
       land.fromDate = new Date(Date.now()).toLocaleString();
       land.toDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toLocaleString();
       land.rentingUser = preRequest.requestingUser;
+      land.forRent = false;
       
       await this.landModel.findByIdAndUpdate(preRequest.landId, land).exec();
       
