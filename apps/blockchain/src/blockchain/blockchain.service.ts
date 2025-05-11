@@ -12,7 +12,7 @@ export class BlockchainService implements OnModuleInit {
   private contractAddress: string = ""; 
 
   async onModuleInit() {
-    this.web3 = new Web3('http://192.168.43.232:8545');
+    this.web3 = new Web3('http://192.168.43.130:8545');
 
     const networkId = Object.keys(contractJSON.networks)[0];
     this.contract = new this.web3.eth.Contract(
