@@ -87,4 +87,9 @@ addSensorToRegion(
   removeActivity(@Payload() data: { regionId: string; activityId: string }) {
     return this.regionsService.removeActivity(data.regionId, data.activityId);
   }
+  @MessagePattern(REGION_PATTERNS.UPDATE_ACTIVITY)
+  updateActivity(@Payload() data: { regionId: string; activityId: string; description: string; date?: string }) {
+    return this.regionsService.updateActivity(data.regionId, data.activityId, data.description, data.date);
+  }
+
 }

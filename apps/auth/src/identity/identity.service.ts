@@ -17,7 +17,6 @@ import { UpdateUserDto } from './dto/update.user.dto';
 import { lastValueFrom } from 'rxjs';
 import { RedisService } from '../cache/redis.cache.service';
 import { EmailService } from '@app/contracts/services/email.service';
-import { SmsService } from '@app/contracts/services/sms.service';
 
 @Injectable()
 export class IdentityService {
@@ -25,7 +24,6 @@ export class IdentityService {
     private readonly jwtService: JwtService,
     @InjectModel(User.name) private userModel: Model<User>,
     private readonly emailService : EmailService, // Assuming the email service is injected
-    private readonly smsService: SmsService, // Assuming the SMS service is injected
     @Inject(LAND_NAME)private landClient : ClientProxy,
     private cacheService : RedisService
   ) {}
@@ -140,10 +138,6 @@ export class IdentityService {
       const resetLink = `https://your-app.com/reset-password?token=${resetToken}`;
       this.emailService.sendOtp(user.email, resetLink); // Assuming the service is integrated
       console.log(`Sending reset link to email: ${user.email}`);
-    } else if (user.phonenumber) {
-      // Send SMS (you can use an SMS service like Twilio)
-      this.smsService.sendOtp(user.phonenumber, resetToken); // Assuming the service is integrated
-      console.log(`Sending reset token via SMS to: ${user.phonenumber}`);
     }
   }
 
@@ -173,6 +167,12 @@ export class IdentityService {
       if (updateData.phonenumber) updateFields['phonenumber'] = updateData.phonenumber;
       if (updateData.address) updateFields['address'] = updateData.address;
       if (updateData.image) updateFields['image'] = updateData.image;
+      // Ajouter la gestion du mot de passe avec hashage
+      if (updateData.password) {
+        const hashedPassword = await bcrypt.hash(updateData.password, 10);
+        updateFields['password'] = hashedPassword;
+        console.log('Password updated and hashed');
+      }
 
       // Mettre à jour l'utilisateur
       const updatedUser = await this.userModel.findByIdAndUpdate(

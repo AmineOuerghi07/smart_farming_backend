@@ -315,4 +315,35 @@ export class RegionsService implements OnModuleInit {
       { new: true }
     );
   }
+
+  async updateActivity(regionId: string, activityId: string, description: string, date?: string) {
+    try {
+      const region = await this.regionModel.findById(regionId);
+      if (!region) throw new Error('Region not found');
+      
+      const activity = region.activities.find((a: any) => a._id?.toString() === activityId);
+      if (!activity) throw new Error('Activity not found');
+      
+      activity.description = description;
+      
+      // Si la description est "Activité validée", marquer comme terminée
+      if (description === "Activité validée") {
+        activity.done = true;
+        activity.doneDate = new Date().toISOString();
+      } else if (description === "À faire") {
+        activity.done = false;
+        activity.doneDate = undefined;
+      }
+      
+      if (date) {
+        activity.date = new Date(date).toISOString();
+      }
+      
+      await region.save();
+      return region;
+    } catch (error) {
+      this.logger.error(`Error updating activity: ${error.message}`);
+      throw error;
+    }
+  }
 }

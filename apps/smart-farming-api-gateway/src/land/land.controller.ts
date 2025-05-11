@@ -300,6 +300,20 @@ async deletePlant(@Param('id') id: string)
       throw error;
     }
   }
+  @Put('/region/:regionId/activity/:activityId')
+  async updateActivity(
+    @Param('regionId') regionId: string,
+    @Param('activityId') activityId: string,
+    @Body('description') description: string,
+    @Body('date') date?: string
+  ) { 
+    return this.landService.updateActivity(regionId, activityId, description, date);
+  }
+  
+
+
+ 
+ 
  
  
     //-----------------------------Sensor Endpoint Testing ---------------------------

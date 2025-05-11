@@ -187,6 +187,14 @@ export class LandService {
           { regionId, activityId }
         ).toPromise();
       }
+
+     
+
+
+
+
+     
+
        //-------------------------------------------------
        async createSensor(createSensorDto : CreateSensorDto){
         return this.landClient.send(SENSOR_PATTERNS.CREATE ,createSensorDto).toPromise()
@@ -213,6 +221,13 @@ export class LandService {
     return this.landClient.send<any, { regionId: string; activityId: string; done: boolean }>(
       REGION_PATTERNS.SET_ACTIVITY_DONE,
       { regionId, activityId, done }
+    ).toPromise();
+  }
+
+  async updateActivity(regionId: string, activityId: string, description: string, date?: string) {
+    return this.landClient.send<any, { regionId: string; activityId: string; description: string; date?: string }>(
+      REGION_PATTERNS.UPDATE_ACTIVITY,
+      { regionId, activityId, description, date }
     ).toPromise();
   }
 
