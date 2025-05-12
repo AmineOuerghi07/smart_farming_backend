@@ -13,4 +13,5 @@ export const REGION_PATTERNS =
     ADD_ACTIVITY: 'region.addActivity',
     SET_ACTIVITY_DONE: 'set_activity_done',
     REMOVE_ACTIVITY: 'region.removeActivity',
+    UPDATE_ACTIVITY: 'region.updateActivity',
 }

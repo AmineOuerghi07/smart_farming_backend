@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+import { Controller, Get, Post, Put, Delete, Param, Body, UploadedFile, UseInterceptors, NotFoundException, UseGuards, BadRequestException, Query } from '@nestjs/common';
+=======
 import { Controller, Get, Post, Put, Delete, Param, Body, UploadedFile, UseInterceptors, NotFoundException, UseGuards, BadRequestException, Query, InternalServerErrorException } from '@nestjs/common';
+>>>>>>> b0cac77cb0e55a58c0fb61deb57cc96be3f9ca17
 import { LandService } from './land.service';
 import { CreateLandDto } from '@app/contracts/land/dtos/land-dto/create-land.dto';
 import { UpdateLandDto } from '@app/contracts/land/dtos/land-dto/update-land.dto';
@@ -295,6 +299,7 @@ async deletePlant(@Param('id') id: string)
   }
   @Delete('/region/:regionId/activity/:activityId')
   async removeActivity(
+<<<<<<< HEAD
     @Param('regionId') regionId: string,
     @Param('activityId') activityId: string
     
@@ -310,6 +315,37 @@ async deletePlant(@Param('id') id: string)
       throw error;
     }
   }
+  @Put('/region/:regionId/activity/:activityId')
+  async updateActivity(
+    @Param('regionId') regionId: string,
+    @Param('activityId') activityId: string,
+    @Body('description') description: string,
+    @Body('date') date?: string
+  ) { 
+    return this.landService.updateActivity(regionId, activityId, description, date);
+  }
+  
+
+
+ 
+ 
+=======
+    @Param('regionId') regionId: string,
+    @Param('activityId') activityId: string
+    
+  ) {
+    try {
+      const result = await this.landService.removeActivity(regionId, activityId);
+      if (!result) {
+        throw new NotFoundException(`Activity not found`);
+      }
+      return result;
+    } catch (error) {
+      console.error('Error removing activity:', error);
+      throw error;
+    }
+  }
+>>>>>>> b0cac77cb0e55a58c0fb61deb57cc96be3f9ca17
  
  
     //-----------------------------Sensor Endpoint Testing ---------------------------
