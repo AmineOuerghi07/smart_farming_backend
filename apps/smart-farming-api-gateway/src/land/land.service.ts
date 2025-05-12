@@ -181,17 +181,10 @@ export class LandService {
         return this.landClient.send<any, { regionId: string; description: string; date?: string }>(
           REGION_PATTERNS.ADD_ACTIVITY,
           { regionId, description, date }
-<<<<<<< HEAD
-=======
+
         ).toPromise();
       }
-      async removeActivity(regionId: string, activityId: string) {
-        return this.landClient.send<any, { regionId: string; activityId: string }>(
-          REGION_PATTERNS.REMOVE_ACTIVITY,
-          { regionId, activityId }
->>>>>>> b0cac77cb0e55a58c0fb61deb57cc96be3f9ca17
-        ).toPromise();
-      }
+
       async removeActivity(regionId: string, activityId: string) {
         return this.landClient.send<any, { regionId: string; activityId: string }>(
           REGION_PATTERNS.REMOVE_ACTIVITY,
@@ -235,7 +228,7 @@ export class LandService {
     ).toPromise();
   }
 
-<<<<<<< HEAD
+
   async updateActivity(regionId: string, activityId: string, description: string, date?: string) {
     return this.landClient.send<any, { regionId: string; activityId: string; description: string; date?: string }>(
       REGION_PATTERNS.UPDATE_ACTIVITY,
@@ -244,7 +237,7 @@ export class LandService {
   }
 
  
-=======
+
  
   async createLandRequest(createLandRequestDto: CreateLandRequestDto) {
     return await this.landClient.send<any, CreateLandRequestDto>(LAND_PATTERNS.CREATE_LAND_REQUEST, createLandRequestDto).toPromise();
@@ -261,7 +254,6 @@ export class LandService {
   async getLandRequestsByUserId(userId: string) {
     return await this.landClient.send<any, string>(LAND_PATTERNS.GET_LAND_REQUESTS_BY_USER_ID, userId).toPromise();
   }
->>>>>>> b0cac77cb0e55a58c0fb61deb57cc96be3f9ca17
  
 
 }

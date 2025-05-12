@@ -193,7 +193,6 @@ export class LandsService {
       });
     }
   }
-<<<<<<< HEAD
 
   async getPlantsBySeason(season: string): Promise<Plant[]> {
     try {
@@ -255,13 +254,12 @@ export class LandsService {
     }
   }
 
-  async setLandForRent(landId: string, userId: string, rentPrice: number): Promise<Land> {
-    const land = await this.landModel.findOne({
-      _id: new Types.ObjectId(landId),
-      user: new Types.ObjectId(userId), // Ensure the user owns the land
-    }).exec();
-=======
->>>>>>> b0cac77cb0e55a58c0fb61deb57cc96be3f9ca17
+  // async setLandForRent(landId: string, userId: string, rentPrice: number): Promise<Land> {
+  //   const land = await this.landModel.findOne({
+  //     _id: new Types.ObjectId(landId),
+  //     user: new Types.ObjectId(userId), // Ensure the user owns the land
+  //   }).exec();
+  // }
 
   async findLandsByUserId(userId: string): Promise<Land[]> {
     try {
