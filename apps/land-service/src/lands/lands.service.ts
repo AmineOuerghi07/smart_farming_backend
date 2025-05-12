@@ -194,6 +194,73 @@ export class LandsService {
     }
   }
 
+  async getPlantsBySeason(season: string): Promise<Plant[]> {
+    try {
+      const lands = await this.landModel.find()
+        .populate({
+          path: 'regions',
+          populate: {
+            path: 'plants.plant',
+            match: { plantingSeasons: season }
+          }
+        })
+        .exec();
+
+      const plants = new Set<Plant>();
+      
+      lands.forEach(land => {
+        land.regions.forEach((region: any) => {
+          region.plants.forEach((plantEntry: any) => {
+            if (plantEntry.plant) {
+              plants.add(plantEntry.plant);
+            }
+          });
+        });
+      });
+
+      return Array.from(plants);
+    } catch (error) {
+      throw new Error(`Failed to fetch plants by season: ${error.message}`);
+    }
+  }
+
+  async getPlantsByGrowthCycle(months: number): Promise<Plant[]> {
+    try {
+      const lands = await this.landModel.find()
+        .populate({
+          path: 'regions',
+          populate: {
+            path: 'plants.plant',
+            match: { growthCycleMonths: months }
+          }
+        })
+        .exec();
+
+      const plants = new Set<Plant>();
+      
+      lands.forEach(land => {
+        land.regions.forEach((region: any) => {
+          region.plants.forEach((plantEntry: any) => {
+            if (plantEntry.plant) {
+              plants.add(plantEntry.plant);
+            }
+          });
+        });
+      });
+
+      return Array.from(plants);
+    } catch (error) {
+      throw new Error(`Failed to fetch plants by growth cycle: ${error.message}`);
+    }
+  }
+
+  // async setLandForRent(landId: string, userId: string, rentPrice: number): Promise<Land> {
+  //   const land = await this.landModel.findOne({
+  //     _id: new Types.ObjectId(landId),
+  //     user: new Types.ObjectId(userId), // Ensure the user owns the land
+  //   }).exec();
+  // }
+
   async findLandsByUserId(userId: string): Promise<Land[]> {
     try {
       const lands = await this.landModel.find({ user: userId }).exec();

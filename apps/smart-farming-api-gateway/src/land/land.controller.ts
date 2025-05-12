@@ -1,3 +1,4 @@
+
 import { Controller, Get, Post, Put, Delete, Param, Body, UploadedFile, UseInterceptors, NotFoundException, UseGuards, BadRequestException, Query, InternalServerErrorException } from '@nestjs/common';
 import { LandService } from './land.service';
 import { CreateLandDto } from '@app/contracts/land/dtos/land-dto/create-land.dto';
@@ -310,8 +311,21 @@ async deletePlant(@Param('id') id: string)
       throw error;
     }
   }
+  @Put('/region/:regionId/activity/:activityId')
+  async updateActivity(
+    @Param('regionId') regionId: string,
+    @Param('activityId') activityId: string,
+    @Body('description') description: string,
+    @Body('date') date?: string
+  ) { 
+    return this.landService.updateActivity(regionId, activityId, description, date);
+  }
+  
+
+
  
  
+
     //-----------------------------Sensor Endpoint Testing ---------------------------
     @Post('/sensor')
     async createSensor(@Body()createSensorDto : CreateSensorDto){

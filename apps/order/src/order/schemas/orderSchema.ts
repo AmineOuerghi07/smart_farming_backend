@@ -20,7 +20,8 @@ export class Order {
         productId: string;
         quantity: number;
     }>;
-
+    @Prop({required: false })
+    referenceId: string;
     @Prop({ required: true })
     totalAmount: number;
 

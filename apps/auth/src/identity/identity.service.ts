@@ -137,9 +137,6 @@ export class IdentityService {
       const resetLink = `https://your-app.com/reset-password?token=${resetToken}`;
       this.emailService.sendOtp(user.email, resetLink); // Assuming the service is integrated
       console.log(`Sending reset link to email: ${user.email}`);
-    } else if (user.phonenumber) {
-      // Send SMS (you can use an SMS service like Twilio)
-      console.log(`Sending reset token via SMS to: ${user.phonenumber}`);
     }
   }
 
@@ -169,6 +166,12 @@ export class IdentityService {
       if (updateData.phonenumber) updateFields['phonenumber'] = updateData.phonenumber;
       if (updateData.address) updateFields['address'] = updateData.address;
       if (updateData.image) updateFields['image'] = updateData.image;
+      // Ajouter la gestion du mot de passe avec hashage
+      if (updateData.password) {
+        const hashedPassword = await bcrypt.hash(updateData.password, 10);
+        updateFields['password'] = hashedPassword;
+        console.log('Password updated and hashed');
+      }
 
       // Mettre à jour l'utilisateur
       const updatedUser = await this.userModel.findByIdAndUpdate(
