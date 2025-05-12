@@ -1,12 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 
 @Schema()
-export class User {
+export class User extends Document {
  
-  @Prop({'_id' : true})
-  _id : Types.ObjectId
   
   @Prop({ required: true })
   email: string;

@@ -6,12 +6,17 @@ contract LandRentalContract {
 
     struct Rental {
         uint32 id;
-        string userId;
+        string ownerId;
+        string rentingUserId;
+        string userName;
         string landId;
+        string landName;
+        string landLocation;
         string startDate;
         string endDate;
         string totalPrice;
         string monthlyPrice;
+        
         bool isActive;
     }
 
@@ -26,15 +31,18 @@ contract LandRentalContract {
 
     event RentalTerminated(uint32 id);
 
-    function createRental(string memory userId, string memory landId, string memory startDate, string memory endDate, string memory price, string memory totalPrice) public {
+    function createRental(string memory userId, string memory rentingUserId, string memory userName, string memory landId, string memory landName, string memory landLocation,string memory startDate, string memory endDate, string memory price, string memory totalPrice) public {
         require(bytes(userId).length > 0, "User ID is required");
         require(bytes(startDate).length > 0, "Start date is required");
         require(bytes(endDate).length > 0, "End date is required");
-        require(keccak256(abi.encodePacked(startDate)) < keccak256(abi.encodePacked(endDate)), "Start date must be before end date");
         rentals.push(Rental(
             rentalCount,
             userId,
+            rentingUserId,
+            userName,
             landId,
+            landName,
+            landLocation,
             startDate,
             endDate,
             totalPrice,
