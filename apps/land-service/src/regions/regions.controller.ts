@@ -73,13 +73,23 @@ addSensorToRegion(
     return this.regionsService.findConnectedRegions(userId);
   }
   @MessagePattern(REGION_PATTERNS.ADD_ACTIVITY)
-  addActivity(@Payload() data: { regionId: string; description: string }) {
+  addActivity(@Payload() data: { regionId: string; description: string; date?: string }) {
     console.log('Handler ADD_ACTIVITY called with:', data);
-    return this.regionsService.addActivity(data.regionId, data.description);
+    return this.regionsService.addActivity(data.regionId, data.description, data.date);
   }
 
   @MessagePattern(REGION_PATTERNS.SET_ACTIVITY_DONE)
   setActivityDone(@Payload() data: { regionId: string; activityId: string; done: boolean }) {
     return this.regionsService.setActivityDone(data.regionId, data.activityId, data.done);
   }
+
+  @MessagePattern(REGION_PATTERNS.REMOVE_ACTIVITY)
+  removeActivity(@Payload() data: { regionId: string; activityId: string }) {
+    return this.regionsService.removeActivity(data.regionId, data.activityId);
+  }
+  @MessagePattern(REGION_PATTERNS.UPDATE_ACTIVITY)
+  updateActivity(@Payload() data: { regionId: string; activityId: string; description: string; date?: string }) {
+    return this.regionsService.updateActivity(data.regionId, data.activityId, data.description, data.date);
+  }
+
 }
