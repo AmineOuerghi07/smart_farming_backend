@@ -13,10 +13,13 @@ export class BlockchainController {
     return this.blockchainService.createRental(createBlockchainDto);
   }
 
-
-
   @MessagePattern(BLOCKCHAIN_PATTERNS.BLOCKCHAIN_GET_LAND_REQUEST_BY_ID)
   findOne() {
     return this.blockchainService.getAllRentals();
+  }
+
+  @MessagePattern(BLOCKCHAIN_PATTERNS.GET_RENTALS_BY_USER_ID)
+  findByUserId(@Payload() userId: string) {
+    return this.blockchainService.getRentalByUserId(userId);
   }
 }

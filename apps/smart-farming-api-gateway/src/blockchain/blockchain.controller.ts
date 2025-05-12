@@ -19,7 +19,7 @@ export class BlockchainController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.blockchainService.findOne(+id);
+    return this.blockchainService.findOne(id);
   }
 
   @Patch(':id')

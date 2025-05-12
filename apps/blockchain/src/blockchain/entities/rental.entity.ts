@@ -1,7 +1,11 @@
 export class Rental {
     id: number;
-    userId: string;
+    ownerId: string;
+    rentingUserId: string;
+    userName: string;
     landId: string;
+    landName: string;
+    landLocation: string;
     startDate: string;
     endDate: string;
     rentPrice: string;
@@ -10,8 +14,12 @@ export class Rental {
   
     constructor(
       id: number,
-      userId: string,
+      ownerId: string,
+      rentingUserId: string,
+      userName: string,
       landId: string,
+      landName: string,
+      landLocation: string,
       startDate: string,
       endDate: string,
       rentPrice: string,
@@ -19,8 +27,12 @@ export class Rental {
       isActive: boolean
     ) {
       this.id = id;
-      this.userId = userId;
+      this.ownerId = ownerId;
+      this.rentingUserId = rentingUserId;
+      this.userName = userName;
       this.landId = landId;
+      this.landName = landName;
+      this.landLocation = landLocation;
       this.startDate = startDate;
       this.endDate = endDate;
       this.rentPrice = rentPrice;
