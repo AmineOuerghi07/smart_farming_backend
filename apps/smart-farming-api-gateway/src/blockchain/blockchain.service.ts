@@ -16,8 +16,8 @@ export class BlockchainService {
     return await this.client.send(BLOCKCHAIN_PATTERNS.BLOCKCHAIN_GET_LAND_REQUEST_BY_ID, {});
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} blockchain`;
+  async findOne(id: string) {
+    return await this.client.send<any, string>(BLOCKCHAIN_PATTERNS.GET_RENTALS_BY_USER_ID, id);
   }
 
   update(id: number, updateBlockchainDto: UpdateBlockchainDto) {

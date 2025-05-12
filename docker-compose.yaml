@@ -30,6 +30,7 @@ services:
     environment:
       - DATABASE_URL=mongodb://mongo:27017/farm
       - RABBITMQ_URL=amqp://rabbitmq:5673
+      - EMAIL_FROM=njahimaram2@gmail.com
     networks:
       - smart-farming-backend
     restart: unless-stopped

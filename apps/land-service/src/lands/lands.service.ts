@@ -40,7 +40,7 @@ export class LandsService {
 
   async findAll(): Promise<Land[] | { message: string }> {
     try {
-      const lands = await this.landModel.find({}).exec();
+      const lands = await this.landModel.find({}).populate('regions').exec();
       
       if (lands.length === 0) {
         // Use our custom RpcNoDataException for no data scenarios
@@ -193,7 +193,6 @@ export class LandsService {
       });
     }
   }
-<<<<<<< HEAD
 
   async getPlantsBySeason(season: string): Promise<Plant[]> {
     try {
@@ -255,26 +254,36 @@ export class LandsService {
     }
   }
 
-  async setLandForRent(landId: string, userId: string, rentPrice: number): Promise<Land> {
-    const land = await this.landModel.findOne({
-      _id: new Types.ObjectId(landId),
-      user: new Types.ObjectId(userId), // Ensure the user owns the land
-    }).exec();
-=======
->>>>>>> b0cac77cb0e55a58c0fb61deb57cc96be3f9ca17
+  // async setLandForRent(landId: string, userId: string, rentPrice: number): Promise<Land> {
+  //   const land = await this.landModel.findOne({
+  //     _id: new Types.ObjectId(landId),
+  //     user: new Types.ObjectId(userId), // Ensure the user owns the land
+  //   }).exec();
+  // }
 
   async findLandsByUserId(userId: string): Promise<Land[]> {
     try {
-      const lands = await this.landModel.find({ user: userId }).exec();
+      let lands = await this.landModel.find({ user: new Types.ObjectId(userId) }).exec();
+      const rentedLands = await this.landModel.find({ rentingUser : new Types.ObjectId(userId) }).exec();
+      const result = lands.filter(land => {
+        let isRented = false;
+        if(land.rentingUser != null) {
+          isRented = true;
+        }
+        return !isRented;
+      });
 
-      if (lands.length === 0) {
+      const allLands = result.concat(rentedLands);
+  
+
+      if (allLands.length === 0) {
         throw new RpcException({
           message: `No lands found for user with ID ${userId}`,
           statusCode: 404
         });
       }
 
-      return lands;
+      return allLands;
     } catch (error) {
       if (error instanceof RpcException) {
         throw error;
@@ -348,7 +357,7 @@ export class LandsService {
   }
 
   // Updated methods for land requests
-  async getLandRequestsByUserId(userId: string): Promise<LandRequest[]> {
+  async getLandRequestsByUserId(userId: string) {
     try {
       const lands = await this.landModel.find({ user: userId }).exec();
       
@@ -359,10 +368,28 @@ export class LandsService {
         });
       }
       
-      const requests = await this.landRequestModel.find().exec();
+      const requests = await this.landRequestModel.find({status : "pending"}).populate("requestingUser landId").exec();
+      let userRequests : {requestId : string,userName: string, landName: string, landLocation : string, userImg : string, price : number , landId : string, userId: string}[] = [];
       const filteredRequests = requests.filter((request) => {
-        const land = lands.find((land) => land._id.toString() === request.landId.toString());
-        return land != null;
+        const land = lands.find((land) => land._id.toString() === request.landId._id.toString());
+
+        console.log('Land:', land);
+        console.log('Request:', request);
+        if(land != null)
+        {
+          userRequests.push({
+            requestId: request._id.toString(),
+            userName: request.requestingUser.name,
+            landName: land.name,
+            landLocation: land.cordonate,
+            userImg: request.requestingUser.image ?? "",
+            price: land.rentPrice,
+            landId: land._id.toString(),
+            userId: request.requestingUser._id.toString()
+          });
+          return true;
+        }
+        return false;
       });
       
       if (filteredRequests.length === 0) {
@@ -372,7 +399,7 @@ export class LandsService {
         });
       }
       
-      return filteredRequests;
+      return userRequests;
     } catch (error) {
       if (error instanceof RpcException) {
         throw error;
@@ -406,8 +433,8 @@ export class LandsService {
       
       // Checking if the user already has a request for this land
       const existingRequest = await this.landRequestModel.findOne({ 
-        landId: createLandRequestDto.landId, 
-        requestingUser: createLandRequestDto.requestingUser 
+        landId: new Types.ObjectId(createLandRequestDto.landId), 
+        requestingUser: new Types.ObjectId(createLandRequestDto.requestingUser) 
       }).exec();
       
       if (existingRequest) {
@@ -427,10 +454,7 @@ export class LandsService {
       console.log('Creating new land request:', landRequest);
       await landRequest.save();
       
-      return { 
-        success: true, 
-        message: 'Land request created successfully' 
-      };
+      return landRequest;
     } catch (error) {
       if (error instanceof RpcException) {
         throw error;
@@ -446,7 +470,7 @@ export class LandsService {
 
   async acceptRequest(requestId: string): Promise<{ success: boolean; message: string }> {
     try {
-      const preRequest = await this.landRequestModel.findById(requestId).exec();
+      const preRequest = await this.landRequestModel.findById(requestId).populate("requestingUser landId").exec();
       
       if (!preRequest) {
         throw new RpcException({
@@ -484,20 +508,21 @@ export class LandsService {
       await this.landModel.findByIdAndUpdate(preRequest.landId, land).exec();
       
       let blockchainRequest = {
+        ownerId : land.user._id.toString(),
         requestingUser: preRequest.requestingUser.toString(),
+        userName : preRequest.requestingUser.name,
         fromDate: land.fromDate,
         toDate: land.toDate,
-        landId: preRequest.landId.toString(),
+        landId: preRequest.landId._id.toString(),
+        landName: land.name,
+        landLocation: land.cordonate,
         rentPrice: land.rentPrice.toString(),
         totalPrice: (land.rentPrice * 12).toString()
       };
       
       await this.client.emit(BLOCKCHAIN_PATTERNS.BLOCKCHAIN_CREATE_LAND_REQUEST, blockchainRequest).toPromise();
       
-      return { 
-        success: true, 
-        message: 'Land request accepted successfully' 
-      };
+      return preRequest;
     } catch (error) {
       if (error instanceof RpcException) {
         throw error;
@@ -534,10 +559,7 @@ export class LandsService {
         { status: 'rejected' }
       ).exec();
       
-      return { 
-        success: true, 
-        message: 'Land request rejected successfully' 
-      };
+      return preRequest;
     } catch (error) {
       if (error instanceof RpcException) {
         throw error;

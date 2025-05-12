@@ -3,17 +3,18 @@ import { User } from "../../users/entities/user.entity";
 import { Types } from "mongoose";
 import { Land } from "./land.entity";
 
+import { Document } from "mongoose";
 
 @Schema()
-export class LandRequest
+export class LandRequest extends Document
 {
     @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
-    requestingUser: User | Types.ObjectId; // User ID of the person requesting the land 
+    requestingUser: User // User ID of the person requesting the land 
 
     @Prop({ required: true, type: Types.ObjectId, ref: 'Land' })
-    landId: Land | Types.ObjectId; // ID of the land being requested
+    landId: Land  // ID of the land being requested
     
-    @Prop({ required: true, default: Date.now.toString() })
+    @Prop({ required: true, default: new Date().toLocaleDateString() })
     requestDate: string; // Date of the request
     
     @Prop({ required: true, default: 'pending' })

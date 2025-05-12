@@ -20,6 +20,9 @@ export class CreateOrderDto {
     @IsNotEmpty()
     @IsString()
     orderStatus: string; // You can add enum validation if needed
+    @IsNotEmpty()
+    @IsString()
+    referenceId: string; 
 
     @IsArray()
     @ValidateNested({ each: true })
