@@ -18,13 +18,19 @@ export class OrderController {
     orderDTO.orderItems = payload.orderItems;
     return orderDTO;
   }
-
   @MessagePattern(ORDER_PATTERNS.CREATE)
   create(@Payload() createOrderDto: CreateOrderDto) {
 
+    createOrderDto.referenceId = OrderController.generateReferenceId();
     return this.orderService.create(createOrderDto);
   }
+  static generateReferenceId(): string {
 
+    return Math.floor(100000 + Math.random() * 900000).toString();
+
+
+  }
+  
   @MessagePattern(ORDER_PATTERNS.FIND_ALL)
   findAll() {
     return this.orderService.findAll();
@@ -44,4 +50,5 @@ export class OrderController {
   remove(@Payload() id: string) {
     return this.orderService.remove(id);
   }
+  
 }
