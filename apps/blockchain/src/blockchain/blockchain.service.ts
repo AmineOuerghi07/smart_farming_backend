@@ -9,10 +9,10 @@ export class BlockchainService implements OnModuleInit {
 
   private web3: Web3;
   private contract: any;
-  private contractAddress: string = ""; 
+  private contractAddress: string = "";
 
   async onModuleInit() {
-    this.web3 = new Web3('http://192.168.43.130:8545');
+    this.web3 = new Web3('http://192.168.1.169:8545');
 
     const networkId = Object.keys(contractJSON.networks)[0];
     this.contract = new this.web3.eth.Contract(
@@ -28,10 +28,10 @@ export class BlockchainService implements OnModuleInit {
     try {
       const accounts = await this.web3.eth.getAccounts();
       const estimateGas = await this.contract.methods
-        .createRental(createBlockchainDto.requestingUser, createBlockchainDto.landId ,createBlockchainDto.fromDate, createBlockchainDto.toDate, createBlockchainDto.rentPrice, createBlockchainDto.totalPrice)
+        .createRental(createBlockchainDto.ownerId, createBlockchainDto.requestingUser, createBlockchainDto.userName, createBlockchainDto.landId, createBlockchainDto.landName, createBlockchainDto.landLocation, createBlockchainDto.fromDate, createBlockchainDto.toDate, createBlockchainDto.rentPrice, createBlockchainDto.totalPrice)
         .estimateGas({ from: accounts[0] });
-        console.log('Estimated gas:', estimateGas); // Log the estimated gas
-      const encode = await this.contract.methods.createRental(createBlockchainDto.requestingUser, createBlockchainDto.landId ,createBlockchainDto.fromDate, createBlockchainDto.toDate, createBlockchainDto.rentPrice, createBlockchainDto.totalPrice).encodeABI();
+      console.log('Estimated gas:', estimateGas); // Log the estimated gas
+      const encode = await this.contract.methods.createRental(createBlockchainDto.ownerId, createBlockchainDto.requestingUser, createBlockchainDto.userName, createBlockchainDto.landId, createBlockchainDto.landName, createBlockchainDto.landLocation, createBlockchainDto.fromDate, createBlockchainDto.toDate, createBlockchainDto.rentPrice, createBlockchainDto.totalPrice).encodeABI();
       console.log('Encoded ABI:', encode); // Log the encoded ABI
       const tx = await this.web3.eth.sendTransaction({
         to: this.contractAddress,
@@ -48,7 +48,7 @@ export class BlockchainService implements OnModuleInit {
         .send({ from: accounts[0] });
 
       console.log('Estimated gas:', estimateGas);*/ // Log the estimated gas
-      
+
     } catch (error) {
       console.error('Error creating rental:', error);
       throw error; // Rethrow the error to be handled by the caller
@@ -58,22 +58,26 @@ export class BlockchainService implements OnModuleInit {
   async getRental(id: number) {
     try {
       const accounts = await this.web3.eth.getAccounts();
-      let rental : Rental
+      let rental: Rental
       const object = await this.contract.methods.getRental(id).call({ from: accounts[0] });
       console.log('Rental details:', object); // Log the rental details
       rental.id = Number(object[0]);
-      rental.userId = object[1];
-      rental.landId = object[2];
-      rental.startDate = object[3];
-      rental.endDate = object[4];
-      rental.rentPrice = object[5];
-      rental.totalPrice = object[6];
-      rental.isActive = object[7];
+      rental.ownerId = object[1];
+      rental.rentingUserId = object[2];
+      rental.userName = object[3];
+      rental.landId = object[4];
+      rental.landName = object[5];
+      rental.landLocation = object[6];
+      rental.startDate = object[7];
+      rental.endDate = object[8];
+      rental.rentPrice = object[9];
+      rental.totalPrice = object[10];
+      rental.isActive = object[11];
       console.log('Rental details:', rental); // Log the rental details
       //return rental; // Return the rental details
-     //await this.contract.methods.getRental(id).call({ from: this.web3.defaultAccount}).then(console.log);
+      //await this.contract.methods.getRental(id).call({ from: this.web3.defaultAccount}).then(console.log);
 
-     return rental;
+      return rental;
     }
     catch (error) {
       console.log('Error getting rental:', error.message);
@@ -83,29 +87,33 @@ export class BlockchainService implements OnModuleInit {
   }
 
   async getAllRentals() {
-   
+
     try {
       const accounts = await this.web3.eth.getAccounts();
-      let rentals : Rental[] = [];
+      let rentals: Rental[] = [];
       const object = await this.contract.methods.getRentals().call({ from: accounts[0] });
       console.log('Rental details:', object); // Log the rental details
-      for(let i = 0; i < object.length; i++){
-        let rental : Rental = new Rental(0, "", "", "", "", "", "", false);
+      for (let i = 0; i < object.length; i++) {
+        let rental: Rental = new Rental(0, "", "", "", "", "", "", "", "", "", "", false);
         rental.id = Number(object[i][0]);
-        rental.userId = object[i][1];
-        rental.landId = object[i][2];
-        rental.startDate = object[i][3];
-        rental.endDate = object[i][4];
-        rental.rentPrice = object[i][5];
-        rental.totalPrice = object[i][6];
-        rental.isActive = object[i][7];
+        rental.ownerId = object[i][1];
+        rental.rentingUserId = object[i][2];
+        rental.userName = object[i][3];
+        rental.landId = object[i][4];
+        rental.landName = object[i][5];
+        rental.landLocation = object[i][6];
+        rental.startDate = object[i][7];
+        rental.endDate = object[i][8];
+        rental.rentPrice = object[i][9];
+        rental.totalPrice = object[i][10];
+        rental.isActive = object[i][11];
         rentals.push(rental);
         console.log('Rental details:', rental); // Log the rental details
       }
       //return rental; // Return the rental details
-     //await this.contract.methods.getRental(id).call({ from: this.web3.defaultAccount}).then(console.log);
+      //await this.contract.methods.getRental(id).call({ from: this.web3.defaultAccount}).then(console.log);
 
-     return rentals;
+      return rentals;
     }
     catch (error) {
       console.log('Error getting rental:', error.message);
@@ -113,6 +121,44 @@ export class BlockchainService implements OnModuleInit {
       throw error; // Rethrow the error to be handled by the caller
     }
 
+
+  }
+
+  async getRentalByUserId(userId: string) {
+    try {
+      const accounts = await this.web3.eth.getAccounts();
+      let rentals: Rental[] = [];
+      const object = await this.contract.methods.getRentals(userId).call({ from: accounts[0] });
+      console.log('Rental details:', object); // Log the rental details
+      for (let i = 0; i < object.length; i++) {
+        if (userId == object[i][1]) {
+          let rental: Rental = new Rental(0, "", "", "", "", "", "", "", "", "", "", false);
+          rental.id = Number(object[i][0]);
+          rental.ownerId = object[i][1];
+          rental.rentingUserId = object[i][2];
+          rental.userName = object[i][3];
+          rental.landId = object[i][4];
+          rental.landName = object[i][5];
+          rental.landLocation = object[i][6];
+          rental.startDate = object[i][7];
+          rental.endDate = object[i][8];
+          rental.rentPrice = object[i][9];
+          rental.totalPrice = object[i][10];
+          rental.isActive = object[i][11];
+          rentals.push(rental);
+          console.log('Rental details:', rental); // Log the rental details
+        }
+      }
+      //return rental; // Return the rental details
+      //await this.contract.methods.getRental(id).call({ from: this.web3.defaultAccount}).then(console.log);
+
+      return rentals;
+    }
+    catch (error) {
+      console.log('Error getting rental:', error.message);
+      console.error('Error fetching rental:', error);
+      throw error; // Rethrow the error to be handled by the caller
+    }
 
   }
 
