@@ -9,7 +9,9 @@ export class CreateRegionDto {
   @IsNotEmpty()
   @IsString()
   land: string;
-
+  @IsString()
+  @IsOptional()
+  description: string;
   @IsOptional()
   @IsNumber()
   surface?: number;
