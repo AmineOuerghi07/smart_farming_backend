@@ -14,7 +14,6 @@ import { OAuth2Client } from 'google-auth-library';
 import { LAND_NAME } from '@app/contracts/land/land.rmq';
 import { USER_PATTERNS } from '@app/contracts/land/user.patterns';
 import { UpdateUserDto } from './dto/update.user.dto';
-import { lastValueFrom } from 'rxjs';
 import { RedisService } from '../cache/redis.cache.service';
 import { EmailService } from '@app/contracts/services/email.service';
 
@@ -77,7 +76,7 @@ export class IdentityService {
   // Login method
   async login(loginDto: LoginDto) {
     console.log('Login attempt:', loginDto);
-    const user = await this.userModel.findOne({ email: loginDto.email });
+    const user = await this.userModel.findOne({ email: {'$regex' : loginDto.email, $options: 'i'} });
     if (!user) {
       throw new RpcException('Invalid credentials');
     }

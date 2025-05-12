@@ -11,6 +11,7 @@ export interface DeviceStatus {
   automatic_mode: boolean;
   last_watered: number | null;
   temperature: number | null;
+  humidity: number | null;
 }
 
 export interface Device {
@@ -229,9 +230,13 @@ export class IrrigationSystemService implements OnModuleInit, OnModuleDestroy {
   }
 
   handleStatusUpdate(message: any) {
-    const { rpi_id, rpi_name, timestamp, soil_is_dry, pump_active, automatic_mode, last_watered, temperature } = message;
+    const { rpi_id, rpi_name, timestamp, soil_is_dry, pump_active, automatic_mode, last_watered, temperature, humidity } = message;
     const device = this.devices.get(rpi_id);
     if (device) {
+      // Log the full message for debugging
+      console.log('Received full status message:', JSON.stringify(message));
+      console.log('Extracted humidity value:', humidity);
+      
       this.devices.set(rpi_id, { 
         ...device, 
         lastHeartbeat: timestamp,
@@ -241,14 +246,16 @@ export class IrrigationSystemService implements OnModuleInit, OnModuleDestroy {
           pump_active,
           automatic_mode,
           last_watered,
-          temperature
+          temperature,
+          humidity  // Add humidity to the status object
         }
       });
       console.log(`Status update for ${rpi_id}:`, {
         soil_is_dry,
         pump_active,
         automatic_mode,
-        temperature
+        temperature,
+        humidity  // Add humidity to the log
       });
     }
   }
@@ -647,7 +654,7 @@ export class IrrigationSystemService implements OnModuleInit, OnModuleDestroy {
   }
 
   private registerDefaultDevice() {
-    const deviceId = 'irrigation_system_1';
+    const deviceId = 'simulated-pi1';
     const deviceName = 'raspberrypi';
     
     // Create standard queue names
@@ -670,7 +677,8 @@ export class IrrigationSystemService implements OnModuleInit, OnModuleDestroy {
         pump_active: false,
         automatic_mode: true,
         last_watered: null,
-        temperature: null
+        temperature: null,
+        humidity: null  // Add humidity field to default status
       }
     });
     

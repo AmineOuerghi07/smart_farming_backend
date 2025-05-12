@@ -25,7 +25,8 @@ export class EmailService {
     }
 
     console.log('EMAIL_FROM:', this.EMAIL_FROM);
-    console.log('BREVO_API_KEY:', this.BREVO_API_KEY ? '✅ Loaded' : '❌ Not Loaded');
+  
+    console.log('BREVO_API_KEY:', this.BREVO_API_KEY ? '✅ Loaded' : ' Not Loaded');
 
     // Initialisation de l'API Brevo avec la clé API
     try {

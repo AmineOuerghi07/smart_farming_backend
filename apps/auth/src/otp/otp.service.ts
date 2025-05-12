@@ -136,9 +136,10 @@ export class OtpService {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
     console.log('User before update:', { id: user.id, email: user.email, password: user.password });
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    console.log('New hashed password:', hashedPassword);
     try {
-      // Passons le mot de passe en clair à updateUser qui le hashera
-      await this.userService.updateUser(user.id.toString(), { password: newPassword });
+      await this.userService.updateUser(user.id.toString(), { password: hashedPassword });
       const updatedUser = await this.userService.findOne(req.userId);
       console.log('User after update:', { id: updatedUser.id, email: updatedUser.email, password: updatedUser.password });
       return { message: 'Password reset successfully', userId: user.id };

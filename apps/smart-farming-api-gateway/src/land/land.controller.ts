@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { Controller, Get, Post, Put, Delete, Param, Body, UploadedFile, UseInterceptors, NotFoundException, UseGuards, BadRequestException, Query } from '@nestjs/common';
+=======
+import { Controller, Get, Post, Put, Delete, Param, Body, UploadedFile, UseInterceptors, NotFoundException, UseGuards, BadRequestException, Query, InternalServerErrorException } from '@nestjs/common';
+>>>>>>> b0cac77cb0e55a58c0fb61deb57cc96be3f9ca17
 import { LandService } from './land.service';
 import { CreateLandDto } from '@app/contracts/land/dtos/land-dto/create-land.dto';
 import { UpdateLandDto } from '@app/contracts/land/dtos/land-dto/update-land.dto';
@@ -17,6 +21,8 @@ import { CreatePlantDto } from '@app/contracts/land/dtos/plant-dto/create-plant.
 import { UpdatePlantDto } from '@app/contracts/land/dtos/plant-dto/update-plant.dto';
 import { AddPlantToRegionDto } from '@app/contracts/land/dtos/region-dto/add-plant-to-region.dto';
 import { AddSensorToRegionDto } from '@app/contracts/land/dtos/region-dto/add-sensor-to-region.dto';
+import { CreateLandRequestDto } from '@app/contracts/land/dtos/request-dto/create-land-request.dto';
+import { RpcNoDataException } from '@app/contracts/errors/filters/rpc.exception.filter';
 
 
 
@@ -60,7 +66,15 @@ export class LandController {
   }
   @Get('all')
   async findAllLands() {
-    return this.landService.findAllLands();
+    try {
+      return await this.landService.findAllLands();
+    } catch (error) {
+      // Handle specific error types
+      if (error instanceof RpcNoDataException) {
+        throw new NotFoundException(error.message);
+      }
+      throw new InternalServerErrorException('Failed to fetch lands');
+    }
   }
 
   @Get('land/:id')
@@ -285,6 +299,7 @@ async deletePlant(@Param('id') id: string)
   }
   @Delete('/region/:regionId/activity/:activityId')
   async removeActivity(
+<<<<<<< HEAD
     @Param('regionId') regionId: string,
     @Param('activityId') activityId: string
     
@@ -314,6 +329,23 @@ async deletePlant(@Param('id') id: string)
 
  
  
+=======
+    @Param('regionId') regionId: string,
+    @Param('activityId') activityId: string
+    
+  ) {
+    try {
+      const result = await this.landService.removeActivity(regionId, activityId);
+      if (!result) {
+        throw new NotFoundException(`Activity not found`);
+      }
+      return result;
+    } catch (error) {
+      console.error('Error removing activity:', error);
+      throw error;
+    }
+  }
+>>>>>>> b0cac77cb0e55a58c0fb61deb57cc96be3f9ca17
  
  
     //-----------------------------Sensor Endpoint Testing ---------------------------
@@ -339,6 +371,29 @@ async deletePlant(@Param('id') id: string)
     {
       return this.landService.removeSensor(id)
     }
+
+
+
+    // ------------------------------- Land Request Endpoints -------------------------------
+  @Post('/request')
+  async createLandRequest(@Body() createLandRequestDto: CreateLandRequestDto) { // Adjust the type as needed
+    return this.landService.createLandRequest(createLandRequestDto);
+  }
+
+  @Post('/request/accept/:requestId')
+  async acceptLandRequest(@Param('requestId') requestId: string) {
+    return this.landService.acceptLandRequest(requestId);
+  }
+
+  @Post('/request/reject/:requestId')
+  async rejectLandRequest(@Param('requestId') requestId: string) {
+    return this.landService.rejectLandRequest(requestId);
+  }
+  
+  @Get('/request/user/:userId')
+  async getLandRequestsByUserId(@Param('userId') userId: string) {
+    return this.landService.getLandRequestsByUserId(userId);
+  }
 
 
 }

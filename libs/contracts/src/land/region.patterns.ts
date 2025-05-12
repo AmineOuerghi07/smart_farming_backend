@@ -1,3 +1,4 @@
+
 export const REGION_PATTERNS =
 {
     FIND_ALL : 'region.findAll',

@@ -9,6 +9,10 @@ export const LAND_PATTERNS =
     FIND_BY_USER_ID : 'land.findByUserId',
     SET_LAND_FOR_RENT : 'land.setLandForRent',
     FIND_LAND_FOR_RENT : 'land.findLandForRent',
-    FIND_PLANTS_BY_SEASON : 'land.getPlantsBySeason',
-    FIND_PLANTS_BY_CYCLE : 'land.getPlantsByGrowthCycle',
+    FIND_LAND_REQUESTS : 'land.findLandRequests',
+    CREATE_LAND_REQUEST : 'land.createLandRequest',
+    ACCEPT_LAND_REQUEST : 'land.acceptLandRequest',
+    REJECT_LAND_REQUEST : 'land.rejectLandRequest',
+    GET_LAND_REQUESTS_BY_USER_ID : 'land.getLandRequestsByUserId',
+
 }
