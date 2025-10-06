@@ -3,8 +3,11 @@
 ## Description
 
 This academic project was built using Nest.
-This project consists of a backend solution for a Smart Farming [Mobile Application](https://github.com/AmineOuerghi07/DreamCraftPim) using Microservices Architecture, docker for containerization, k8s for orchestrating, grafana prometheus for monitoring the performance and the load on server and finally some blockchain using ganache just to test it locally 
+This project consists of a backend solution for a Smart Farming Mobile Application using Microservices Architecture, docker for containerization, k8s for orchestrating, grafana prometheus for monitoring the performance and the load on server and finally some blockchain using ganache just to test it locally 
 
+### P.S: 
+This application was mainly developed for smartphones so most of the functionality will be available in the flutter side.
+For the front end you can go [Here](https://github.com/AmineOuerghi07/DreamCraftPim) for the mobile solution or [Here](https://github.com/AmineOuerghi07/smart-farming-web) for the web solution
 ## Project setup
 
 First Clone the branch master or amine_branch using this command 
